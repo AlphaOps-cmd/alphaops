@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from './ui/button';
+import { useNavigate } from 'react-router-dom';
 
 interface Exercise {
   name: string;
@@ -20,11 +21,14 @@ interface WorkoutTimerProps {
 }
 
 const WorkoutTimer = ({ onClose, warmup, workout }: WorkoutTimerProps) => {
+  const navigate = useNavigate();
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(true);
   const [completedExercises, setCompletedExercises] = useState<Set<number>>(new Set());
   const [round, setRound] = useState(1);
   const [phase, setPhase] = useState<'warmup' | 'workout'>('warmup');
+  const [roundTimes, setRoundTimes] = useState<number[]>([]);
+  const [roundStartTime, setRoundStartTime] = useState(0);
 
   useEffect(() => {
     let interval: number | null = null;
@@ -53,11 +57,35 @@ const WorkoutTimer = ({ onClose, warmup, workout }: WorkoutTimerProps) => {
     }
     setCompletedExercises(newCompleted);
 
-    // Check if all exercises are completed in warmup phase
     if (phase === 'warmup' && newCompleted.size === warmup.length) {
       setPhase('workout');
       setCompletedExercises(new Set());
       setRound(1);
+      setRoundStartTime(time);
+    }
+  };
+
+  const handleCompleteRound = () => {
+    const roundTime = time - roundStartTime;
+    setRoundTimes([...roundTimes, roundTime]);
+    setRoundStartTime(time);
+
+    if (round < (workout.rounds || 1)) {
+      setRound(r => r + 1);
+      setCompletedExercises(new Set());
+    } else {
+      // Workout complete - navigate to completion page
+      navigate('/workout-complete', {
+        state: {
+          workoutStats: {
+            totalTime: time,
+            roundTimes: workout.type === 'rounds' ? [...roundTimes, roundTime] : undefined,
+            exercises: workout.exercises,
+            type: workout.type,
+            rounds: workout.rounds
+          }
+        }
+      });
     }
   };
 
@@ -112,6 +140,7 @@ const WorkoutTimer = ({ onClose, warmup, workout }: WorkoutTimerProps) => {
             setPhase('workout');
             setCompletedExercises(new Set());
             setRound(1);
+            setRoundStartTime(time);
           }}
         >
           Complete Warm Up
@@ -120,19 +149,24 @@ const WorkoutTimer = ({ onClose, warmup, workout }: WorkoutTimerProps) => {
         workout.type === 'rounds' ? (
           <Button 
             className="fixed bottom-4 left-4 right-4"
-            onClick={() => {
-              if (round < (workout.rounds || 1)) {
-                setRound(r => r + 1);
-                setCompletedExercises(new Set());
-              }
-            }}
+            onClick={handleCompleteRound}
           >
             Complete Round
           </Button>
         ) : (
           <Button 
             className="fixed bottom-4 left-4 right-4"
-            onClick={onClose}
+            onClick={() => {
+              navigate('/workout-complete', {
+                state: {
+                  workoutStats: {
+                    totalTime: time,
+                    exercises: workout.exercises,
+                    type: workout.type
+                  }
+                }
+              });
+            }}
           >
             Complete Workout
           </Button>
