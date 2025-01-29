@@ -17,7 +17,11 @@ const WeeklyCalendar = ({ selectedDay = '24', onSelectDay }: { selectedDay?: str
         <button
           key={index}
           onClick={() => onSelectDay?.(item.date)}
-          className={`calendar-day ${item.date === selectedDay ? 'active' : ''}`}
+          className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
+            item.date === selectedDay 
+              ? 'bg-primary text-primary-foreground' 
+              : 'hover:bg-muted'
+          }`}
         >
           <span className="text-sm">{item.day}</span>
           <span className="text-lg font-bold">{item.date}</span>
