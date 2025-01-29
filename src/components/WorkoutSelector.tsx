@@ -33,7 +33,8 @@ const WorkoutSelector = ({
     <div className="flex flex-wrap gap-2 justify-center mb-8">
       <Button
         variant="outline"
-        className="bg-transparent border-white text-white hover:bg-white/10"
+        size="sm"
+        className="bg-transparent border-white text-white hover:bg-white/10 w-[120px]"
         onClick={() => onWorkoutTypeChange(cycleValue(workoutType, workoutTypes))}
       >
         <Dumbbell className="w-4 h-4 mr-2" />
@@ -41,7 +42,8 @@ const WorkoutSelector = ({
       </Button>
       <Button
         variant="outline"
-        className="bg-transparent border-white text-white hover:bg-white/10"
+        size="sm"
+        className="bg-transparent border-white text-white hover:bg-white/10 w-[120px]"
         onClick={() => onDifficultyChange(cycleValue(difficulty, difficulties))}
       >
         <Slash className="w-4 h-4 mr-2" />
@@ -49,7 +51,8 @@ const WorkoutSelector = ({
       </Button>
       <Button
         variant="outline"
-        className="bg-transparent border-white text-white hover:bg-white/10"
+        size="sm"
+        className="bg-transparent border-white text-white hover:bg-white/10 w-[120px]"
         onClick={() => onDurationChange(cycleValue(duration, durations))}
       >
         <Timer className="w-4 h-4 mr-2" />

@@ -764,7 +764,7 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
       <div className="mt-8 flex justify-center">
         <Button 
           onClick={() => setShowTimer(true)}
-          className="bg-primary text-primary-foreground hover:bg-primary/90"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 w-48 h-12 text-lg"
         >
           Start Workout
         </Button>
