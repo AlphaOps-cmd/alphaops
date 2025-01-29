@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Play } from 'lucide-react';
 import { Button } from './ui/button';
 import WorkoutTimer from './WorkoutTimer';
 import WorkoutSelector from './WorkoutSelector';
+import WorkoutWarmup from './WorkoutWarmup';
+import WorkoutMain from './WorkoutMain';
+import WorkoutRecovery from './WorkoutRecovery';
 
-// Base de datos mejorada de entrenamientos
 const workoutTemplates: Record<string, Record<string, Record<string, {
   warmup: Array<{ name: string, reps: string }>,
   workout: {
@@ -689,15 +691,31 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
   const [workoutType, setWorkoutType] = useState('CrossFit');
   const [difficulty, setDifficulty] = useState('Intermediate');
   const [duration, setDuration] = useState('45 min');
+  const [currentWorkout, setCurrentWorkout] = useState(workoutTemplates[workoutType][difficulty][duration]);
 
-  // Obtener el workout basado en las preferencias seleccionadas
-  const workout = workoutTemplates[workoutType]?.[difficulty]?.[duration] || workoutTemplates['CrossFit']['Intermediate']['45 min'];
+  useEffect(() => {
+    // Update workout when preferences change
+    setCurrentWorkout(workoutTemplates[workoutType][difficulty][duration]);
+  }, [workoutType, difficulty, duration]);
+
+  useEffect(() => {
+    // Update workout when day changes
+    const dayNumber = parseInt(selectedDay);
+    const types = Object.keys(workoutTemplates);
+    const selectedType = types[dayNumber % types.length];
+    const difficulties = Object.keys(workoutTemplates[selectedType]);
+    const selectedDifficulty = difficulties[dayNumber % difficulties.length];
+    const durations = Object.keys(workoutTemplates[selectedType][selectedDifficulty]);
+    const selectedDuration = durations[dayNumber % durations.length];
+    
+    setCurrentWorkout(workoutTemplates[selectedType][selectedDifficulty][selectedDuration]);
+  }, [selectedDay]);
 
   if (showTimer) {
     return <WorkoutTimer 
       onClose={() => setShowTimer(false)} 
-      warmup={workout.warmup}
-      workout={workout.workout}
+      warmup={currentWorkout.warmup}
+      workout={currentWorkout.workout}
     />;
   }
 
@@ -716,52 +734,9 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
         />
       </div>
 
-      <section className="mt-8">
-        <h2 className="text-xl font-bold mb-4">WARM UP:</h2>
-        <p className="text-muted-foreground mb-4">Complete the following</p>
-        <div className="space-y-4">
-          {workout.warmup.map((exercise: any, index: number) => (
-            <div key={index} className="exercise-item">
-              <Play className="h-5 w-5 text-primary mt-1" />
-              <div>
-                <h3 className="font-semibold">{exercise.name}</h3>
-                <p className="text-muted-foreground">- {exercise.reps}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="mt-8">
-        <h2 className="text-xl font-bold mb-4">WORKOUT:</h2>
-        {workout.workout.type === 'rounds' ? (
-          <p className="text-muted-foreground mb-4">Complete {workout.workout.rounds} rounds of:</p>
-        ) : (
-          <p className="text-muted-foreground mb-4">For time:</p>
-        )}
-        <div className="space-y-4">
-          {workout.workout.exercises.map((exercise: any, index: number) => (
-            <div key={index} className="exercise-item">
-              <Play className="h-5 w-5 text-primary mt-1" />
-              <div>
-                <h3 className="font-semibold">{exercise.name}</h3>
-                <p className="text-muted-foreground">- {exercise.reps}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="mt-8">
-        <h2 className="text-xl font-bold mb-4">RECOVERY:</h2>
-        <div className="exercise-item">
-          <Play className="h-5 w-5 text-primary mt-1" />
-          <div>
-            <h3 className="font-semibold">Cool Down</h3>
-            <p className="text-muted-foreground">- {workout.recovery}</p>
-          </div>
-        </div>
-      </section>
+      <WorkoutWarmup warmup={currentWorkout.warmup} />
+      <WorkoutMain workout={currentWorkout.workout} />
+      <WorkoutRecovery recovery={currentWorkout.recovery} />
 
       <div className="mt-8 flex justify-center">
         <Button 
