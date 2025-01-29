@@ -2,11 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from './ui/button';
 
-const WorkoutTimer = ({ onClose, exercises }: { onClose: () => void, exercises: Array<{ name: string, reps: string }> }) => {
+interface Exercise {
+  name: string;
+  reps: string;
+}
+
+interface WorkoutPhase {
+  type: 'rounds' | 'fortime';
+  rounds?: number;
+  exercises: Exercise[];
+}
+
+interface WorkoutTimerProps {
+  onClose: () => void;
+  warmup: Exercise[];
+  workout: WorkoutPhase;
+}
+
+const WorkoutTimer = ({ onClose, warmup, workout }: WorkoutTimerProps) => {
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(true);
   const [completedExercises, setCompletedExercises] = useState<Set<number>>(new Set());
   const [round, setRound] = useState(1);
+  const [phase, setPhase] = useState<'warmup' | 'workout'>('warmup');
 
   useEffect(() => {
     let interval: number | null = null;
@@ -34,7 +52,16 @@ const WorkoutTimer = ({ onClose, exercises }: { onClose: () => void, exercises: 
       newCompleted.add(index);
     }
     setCompletedExercises(newCompleted);
+
+    // Check if all exercises are completed in warmup phase
+    if (phase === 'warmup' && newCompleted.size === warmup.length) {
+      setPhase('workout');
+      setCompletedExercises(new Set());
+      setRound(1);
+    }
   };
+
+  const currentExercises = phase === 'warmup' ? warmup : workout.exercises;
 
   return (
     <div className="fixed inset-0 bg-background z-50 flex flex-col p-4">
@@ -42,20 +69,24 @@ const WorkoutTimer = ({ onClose, exercises }: { onClose: () => void, exercises: 
         <Button variant="ghost" size="icon" onClick={onClose}>
           <ArrowLeft className="h-6 w-6" />
         </Button>
-        <h2 className="text-xl font-bold">FOR TIME</h2>
+        <h2 className="text-xl font-bold">
+          {phase === 'warmup' ? 'WARM UP' : workout.type === 'rounds' ? 'FOR ROUNDS' : 'FOR TIME'}
+        </h2>
       </div>
 
       <div className="flex flex-col items-center justify-center flex-1 gap-8">
         <div className="text-6xl font-bold">{formatTime(time)}</div>
         <p className="text-muted-foreground">tap to pause</p>
         
-        <div className="absolute bottom-24 right-8 flex items-center justify-center w-12 h-12 rounded-full border-2 border-primary">
-          <span className="text-xl font-bold">{round}</span>
-        </div>
+        {phase === 'workout' && workout.type === 'rounds' && (
+          <div className="absolute bottom-24 right-8 flex items-center justify-center w-12 h-12 rounded-full border-2 border-primary">
+            <span className="text-xl font-bold">{round}</span>
+          </div>
+        )}
       </div>
 
       <div className="space-y-4 mb-20">
-        {exercises.map((exercise, index) => (
+        {currentExercises.map((exercise, index) => (
           <div
             key={index}
             className={`exercise-item cursor-pointer ${
@@ -74,12 +105,39 @@ const WorkoutTimer = ({ onClose, exercises }: { onClose: () => void, exercises: 
         ))}
       </div>
 
-      <Button 
-        className="fixed bottom-4 left-4 right-4"
-        onClick={() => setRound(r => r + 1)}
-      >
-        Complete Round
-      </Button>
+      {phase === 'warmup' ? (
+        <Button 
+          className="fixed bottom-4 left-4 right-4"
+          onClick={() => {
+            setPhase('workout');
+            setCompletedExercises(new Set());
+            setRound(1);
+          }}
+        >
+          Complete Warm Up
+        </Button>
+      ) : (
+        workout.type === 'rounds' ? (
+          <Button 
+            className="fixed bottom-4 left-4 right-4"
+            onClick={() => {
+              if (round < (workout.rounds || 1)) {
+                setRound(r => r + 1);
+                setCompletedExercises(new Set());
+              }
+            }}
+          >
+            Complete Round
+          </Button>
+        ) : (
+          <Button 
+            className="fixed bottom-4 left-4 right-4"
+            onClick={onClose}
+          >
+            Complete Workout
+          </Button>
+        )
+      )}
     </div>
   );
 };
