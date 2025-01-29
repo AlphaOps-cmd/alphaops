@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import WorkoutTimer from './WorkoutTimer';
 import WorkoutSelector from './WorkoutSelector';
 
+// Base de datos mejorada de entrenamientos
 const workoutTemplates: Record<string, Record<string, Record<string, {
   warmup: Array<{ name: string, reps: string }>,
   workout: {
@@ -17,166 +18,166 @@ const workoutTemplates: Record<string, Record<string, Record<string, {
     'Beginner': {
       '30 min': {
         warmup: [
-          { name: 'Jump Rope', reps: '2 min' },
-          { name: 'Air Squats', reps: '15x' },
-          { name: 'Push Ups', reps: '10x' },
+          { name: 'Movilidad de hombros', reps: '2 min' },
+          { name: 'Movilidad de caderas', reps: '2 min' },
+          { name: 'Saltar a la comba', reps: '3 min' },
+          { name: 'Sentadillas sin peso', reps: '15 reps' }
         ],
         workout: {
           type: 'rounds',
           rounds: 3,
           exercises: [
-            { name: 'Wall Balls', reps: '10x' },
-            { name: 'Ring Rows', reps: '8x' },
-            { name: 'Box Step-ups', reps: '12x each' },
+            { name: 'Thrusters con mancuernas', reps: '10 reps @ 5kg' },
+            { name: 'Dominadas asistidas con goma', reps: '8 reps' },
+            { name: 'Wall Balls', reps: '12 reps @ 4kg' }
           ]
         },
-        recovery: '5 minutes of stretching'
+        recovery: '5 minutos de estiramientos'
       },
       '45 min': {
         warmup: [
-          { name: 'Row', reps: '500m' },
-          { name: 'Air Squats', reps: '20x' },
-          { name: 'Push Ups', reps: '15x' },
-          { name: 'Mountain Climbers', reps: '30x' },
+          { name: 'Remo', reps: '500m ritmo suave' },
+          { name: 'Movilidad general', reps: '5 min' },
+          { name: 'Burpees', reps: '10 reps' },
+          { name: 'Push Ups con rodillas', reps: '10 reps' }
         ],
         workout: {
           type: 'rounds',
           rounds: 4,
           exercises: [
-            { name: 'Wall Balls', reps: '15x' },
-            { name: 'Ring Rows', reps: '12x' },
-            { name: 'Box Step-ups', reps: '15x each' },
+            { name: 'Peso muerto', reps: '12 reps @ 30kg' },
+            { name: 'Remo con mancuerna', reps: '12 reps cada lado @ 10kg' },
+            { name: 'Box Step-ups', reps: '15 reps cada pierna' }
           ]
         },
-        recovery: '8 minutes of stretching and mobility'
+        recovery: '8 minutos de estiramientos y foam roller'
       },
       '60 min': {
         warmup: [
-          { name: 'Row', reps: '1000m' },
-          { name: 'Air Squats', reps: '25x' },
-          { name: 'Push Ups', reps: '20x' },
-          { name: 'Mountain Climbers', reps: '40x' },
+          { name: 'Bicicleta estática', reps: '5 min' },
+          { name: 'Movilidad completa', reps: '8 min' },
+          { name: 'Mountain Climbers', reps: '30 reps' },
+          { name: 'Air Squats', reps: '20 reps' }
         ],
         workout: {
-          type: 'rounds',
-          rounds: 5,
+          type: 'fortime',
           exercises: [
-            { name: 'Wall Balls', reps: '20x' },
-            { name: 'Ring Rows', reps: '15x' },
-            { name: 'Box Step-ups', reps: '20x each' },
+            { name: 'Clean con barra', reps: '30 reps @ 25kg' },
+            { name: 'Wall Balls', reps: '40 reps @ 4kg' },
+            { name: 'Calories Remo', reps: '40 cal' }
           ]
         },
-        recovery: '10 minutes of stretching and mobility'
+        recovery: '10 minutos de estiramientos y movilidad'
       }
     },
     'Intermediate': {
       '30 min': {
         warmup: [
-          { name: 'Burpees', reps: '20x' },
-          { name: 'Air Squats', reps: '30x' },
-          { name: 'Push Ups', reps: '15x' },
-          { name: 'Mountain Climbers', reps: '40x' },
-        ],
-        workout: {
-          type: 'rounds',
-          rounds: 3,
-          exercises: [
-            { name: 'Thrusters', reps: '15x' },
-            { name: 'Box Jumps', reps: '20x' },
-            { name: 'Pull Ups', reps: '10x' },
-          ]
-        },
-        recovery: '10 minutes of light stretching'
-      },
-      '45 min': {
-        warmup: [
-          { name: 'Pull Ups', reps: '10x' },
-          { name: 'Deadlifts', reps: '12x @ 60kg' },
-          { name: 'Box Jumps', reps: '20x' },
-          { name: 'Kettlebell Swings', reps: '25x' },
-        ],
-        workout: {
-          type: 'fortime',
-          exercises: [
-            { name: 'Clean and Jerks', reps: '30x' },
-            { name: 'Double Unders', reps: '100x' },
-            { name: 'Wall Balls', reps: '50x' },
-          ]
-        },
-        recovery: '15 minutes of mobility work'
-      },
-      '60 min': {
-        warmup: [
-          { name: 'Row', reps: '1000m' },
-          { name: 'Thrusters', reps: '20x' },
-          { name: 'Pull Ups', reps: '15x' },
-          { name: 'Box Jumps', reps: '30x' },
-        ],
-        workout: {
-          type: 'rounds',
-          rounds: 5,
-          exercises: [
-            { name: 'Clean and Jerks', reps: '12x' },
-            { name: 'Muscle Ups', reps: '5x' },
-            { name: 'Handstand Push Ups', reps: '8x' },
-          ]
-        },
-        recovery: '15 minutes of mobility and stretching'
-      }
-    },
-    'Advanced': {
-      '30 min': {
-        warmup: [
-          { name: 'Muscle Ups', reps: '5x' },
-          { name: 'Handstand Push Ups', reps: '10x' },
-          { name: 'Clean and Jerks', reps: '10x' },
-          { name: 'Double Unders', reps: '100x' },
+          { name: 'Saltar a la comba', reps: '5 min' },
+          { name: 'Movilidad específica', reps: '5 min' },
+          { name: 'Push Ups', reps: '15 reps' },
+          { name: 'Pull Ups con banda', reps: '10 reps' }
         ],
         workout: {
           type: 'rounds',
           rounds: 4,
           exercises: [
-            { name: 'Ring Muscle Ups', reps: '8x' },
-            { name: 'Snatch', reps: '10x' },
-            { name: 'Bar Muscle Ups', reps: '6x' },
+            { name: 'Power Clean', reps: '8 reps @ 40kg' },
+            { name: 'Muscle Ups con banda', reps: '5 reps' },
+            { name: 'Double Unders', reps: '50 reps' }
           ]
         },
-        recovery: '10 minutes of mobility work'
+        recovery: '7 minutos de estiramientos'
       },
       '45 min': {
         warmup: [
-          { name: 'Ring Muscle Ups', reps: '8x' },
-          { name: 'Snatch', reps: '15x' },
-          { name: 'Handstand Walk', reps: '20m' },
-          { name: 'Double Unders', reps: '150x' },
+          { name: 'Remo', reps: '1000m' },
+          { name: 'Movilidad de hombros', reps: '5 min' },
+          { name: 'Kipping Swings', reps: '20 reps' },
+          { name: 'Strict Pull Ups', reps: '8 reps' }
         ],
         workout: {
           type: 'fortime',
           exercises: [
-            { name: 'Clean and Jerks', reps: '40x' },
-            { name: 'Bar Muscle Ups', reps: '30x' },
-            { name: 'Handstand Push Ups', reps: '50x' },
+            { name: 'Snatch', reps: '30 reps @ 35kg' },
+            { name: 'Bar Muscle Ups', reps: '20 reps' },
+            { name: 'Overhead Squats', reps: '30 reps @ 30kg' }
           ]
         },
-        recovery: '15 minutes of mobility and recovery'
+        recovery: '10 minutos de movilidad y estiramientos'
       },
       '60 min': {
         warmup: [
-          { name: 'Ring Muscle Ups', reps: '10x' },
-          { name: 'Snatch', reps: '20x' },
-          { name: 'Handstand Walk', reps: '30m' },
-          { name: 'Double Unders', reps: '200x' },
+          { name: 'Assault Bike', reps: '5 min' },
+          { name: 'Movilidad completa', reps: '10 min' },
+          { name: 'Handstand Hold', reps: '30 seg x 3' },
+          { name: 'Muscle Ups práctica', reps: '5 min' }
         ],
         workout: {
           type: 'rounds',
-          rounds: 6,
+          rounds: 5,
           exercises: [
-            { name: 'Clean and Jerks', reps: '15x' },
-            { name: 'Ring Muscle Ups', reps: '8x' },
-            { name: 'Snatch', reps: '12x' },
+            { name: 'Clean and Jerk', reps: '6 reps @ 50kg' },
+            { name: 'Ring Muscle Ups', reps: '4 reps' },
+            { name: 'Devils Press', reps: '12 reps @ 22.5kg' }
           ]
         },
-        recovery: '20 minutes of mobility and recovery'
+        recovery: '12 minutos de movilidad y estiramientos'
+      }
+    },
+    'Advanced': {
+      '30 min': {
+        warmup: [
+          { name: 'Técnica de Muscle Ups', reps: '10 min' },
+          { name: 'Movilidad específica', reps: '5 min' },
+          { name: 'Handstand Push Ups', reps: '10 reps' },
+          { name: 'Clean & Jerk técnica', reps: '5 min' }
+        ],
+        workout: {
+          type: 'rounds',
+          rounds: 4,
+          exercises: [
+            { name: 'Ring Muscle Ups', reps: '6 reps' },
+            { name: 'Clean & Jerk', reps: '4 reps @ 80kg' },
+            { name: 'Pistols', reps: '10 reps cada pierna' }
+          ]
+        },
+        recovery: '8 minutos de movilidad'
+      },
+      '45 min': {
+        warmup: [
+          { name: 'Gimnásticos skill work', reps: '10 min' },
+          { name: 'Snatch technique', reps: '8 min' },
+          { name: 'Handstand Walk', reps: '20m x 3' },
+          { name: 'Bar Muscle Ups', reps: '5 reps' }
+        ],
+        workout: {
+          type: 'fortime',
+          exercises: [
+            { name: 'Squat Snatch', reps: '30 reps @ 60kg' },
+            { name: 'Bar Muscle Ups', reps: '30 reps' },
+            { name: 'Handstand Push Ups', reps: '30 reps' }
+          ]
+        },
+        recovery: '10 minutos de movilidad y técnica'
+      },
+      '60 min': {
+        warmup: [
+          { name: 'Complejo de movilidad', reps: '15 min' },
+          { name: 'Muscle Up practice', reps: '10 min' },
+          { name: 'Snatch Balance', reps: '5 reps @ 70kg' },
+          { name: 'Handstand Walk', reps: '30m x 3' }
+        ],
+        workout: {
+          type: 'rounds',
+          rounds: 5,
+          exercises: [
+            { name: 'Ring Muscle Ups', reps: '3-3-3' },
+            { name: 'Squat Snatch', reps: '2-2-2 @ 80kg' },
+            { name: 'Bar Muscle Ups', reps: '3-3-3' }
+          ]
+        },
+        recovery: '15 minutos de movilidad y técnica'
       }
     }
   },
@@ -683,76 +684,14 @@ const workoutTemplates: Record<string, Record<string, Record<string, {
   }
 };
 
-const generateDailyWorkout = (template: any, day: string) => {
-  const dayNum = parseInt(day);
-  const dayType = dayNum % 3; // 0, 1, or 2 for different workout types
-
-  // Define exercise pools for each difficulty level
-  const exercisePools = {
-    beginner: {
-      cardio: ['Jump Rope', 'Running', 'Row', 'Mountain Climbers', 'Jumping Jacks', 'High Knees'],
-      strength: ['Push Ups', 'Air Squats', 'Ring Rows', 'Wall Balls', 'Box Step-ups', 'Lunges'],
-      core: ['Sit Ups', 'Plank Hold', 'Russian Twists', 'V-Ups', 'Flutter Kicks', 'Hollow Holds']
-    },
-    intermediate: {
-      cardio: ['Double Unders', 'Box Jumps', 'Burpees', 'Rowing Sprints', 'Assault Bike', 'Running'],
-      strength: ['Thrusters', 'Pull Ups', 'Clean and Jerks', 'Deadlifts', 'Front Squats', 'Push Press'],
-      core: ['Toes to Bar', 'GHD Sit Ups', 'Hanging Leg Raises', 'Ab Wheel Rollouts', 'Dragon Flags']
-    },
-    advanced: {
-      cardio: ['Triple Unders', 'Box Jump Overs', 'Bar Facing Burpees', 'Rowing', 'Ski Erg', 'Running'],
-      strength: ['Muscle Ups', 'Snatch', 'Clean and Jerk', 'Handstand Push Ups', 'Bar Muscle Ups'],
-      core: ['Strict Toes to Bar', 'L-Sits', 'Handstand Holds', 'Ring L-Sits', 'Hollow Rocks']
-    }
-  };
-
-  const difficultyLevel = template.workout.exercises[0].name.includes('Muscle Up') ? 'advanced' :
-                         template.workout.exercises[0].name.includes('Thruster') ? 'intermediate' : 
-                         'beginner';
-  
-  const pool = exercisePools[difficultyLevel];
-
-  const generateExercises = (count: number) => {
-    const exercises = [];
-    const types = ['cardio', 'strength', 'core'];
-    
-    for (let i = 0; i < count; i++) {
-      const type = types[i % types.length];
-      const exercisePool = pool[type];
-      const exerciseIndex = (dayNum + i) % exercisePool.length;
-      const exercise = exercisePool[exerciseIndex];
-      
-      exercises.push({
-        name: exercise,
-        reps: dayType === 0 ? '15x' : 
-              dayType === 1 ? `${20 + (i * 5)}x` : 
-              `${30 + (i * 10)}x`
-      });
-    }
-    return exercises;
-  };
-
-  const workoutType: 'rounds' | 'fortime' = dayType === 0 ? 'rounds' : 'fortime';
-
-  return {
-    warmup: generateExercises(3),
-    workout: {
-      type: workoutType,
-      rounds: workoutType === 'rounds' ? 4 : undefined,
-      exercises: generateExercises(4)
-    },
-    recovery: template.recovery
-  };
-};
-
 const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
   const [showTimer, setShowTimer] = useState(false);
   const [workoutType, setWorkoutType] = useState('CrossFit');
   const [difficulty, setDifficulty] = useState('Intermediate');
   const [duration, setDuration] = useState('45 min');
 
-  const baseWorkout = workoutTemplates[workoutType]?.[difficulty]?.[duration] || workoutTemplates['CrossFit']['Intermediate']['45 min'];
-  const workout = generateDailyWorkout(baseWorkout, selectedDay);
+  // Obtener el workout basado en las preferencias seleccionadas
+  const workout = workoutTemplates[workoutType]?.[difficulty]?.[duration] || workoutTemplates['CrossFit']['Intermediate']['45 min'];
 
   if (showTimer) {
     return <WorkoutTimer 
@@ -837,4 +776,3 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
 };
 
 export default WorkoutProgram;
-
