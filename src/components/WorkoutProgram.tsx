@@ -684,32 +684,63 @@ const workoutTemplates: Record<string, Record<string, Record<string, {
 };
 
 const generateDailyWorkout = (template: any, day: string) => {
-  // Use the day number to create variations in reps and exercises
+  // Use the day number to select different exercises
   const dayNum = parseInt(day);
-  const multiplier = (dayNum % 3) + 0.8; // Will give us 0.8, 1.8, or 2.8
+  const dayType = dayNum % 3; // 0, 1, or 2 for different workout types
+
+  // Define exercise pools for each difficulty level
+  const exercisePools = {
+    beginner: {
+      cardio: ['Jump Rope', 'Running', 'Row', 'Mountain Climbers', 'Jumping Jacks', 'High Knees'],
+      strength: ['Push Ups', 'Air Squats', 'Ring Rows', 'Wall Balls', 'Box Step-ups', 'Lunges'],
+      core: ['Sit Ups', 'Plank Hold', 'Russian Twists', 'V-Ups', 'Flutter Kicks', 'Hollow Holds']
+    },
+    intermediate: {
+      cardio: ['Double Unders', 'Box Jumps', 'Burpees', 'Rowing Sprints', 'Assault Bike', 'Running'],
+      strength: ['Thrusters', 'Pull Ups', 'Clean and Jerks', 'Deadlifts', 'Front Squats', 'Push Press'],
+      core: ['Toes to Bar', 'GHD Sit Ups', 'Hanging Leg Raises', 'Ab Wheel Rollouts', 'Dragon Flags']
+    },
+    advanced: {
+      cardio: ['Triple Unders', 'Box Jump Overs', 'Bar Facing Burpees', 'Rowing', 'Ski Erg', 'Running'],
+      strength: ['Muscle Ups', 'Snatch', 'Clean and Jerk', 'Handstand Push Ups', 'Bar Muscle Ups'],
+      core: ['Strict Toes to Bar', 'L-Sits', 'Handstand Holds', 'Ring L-Sits', 'Hollow Rocks']
+    }
+  };
+
+  // Select exercises based on difficulty
+  const difficultyLevel = template.workout.exercises[0].name.includes('Muscle Up') ? 'advanced' :
+                         template.workout.exercises[0].name.includes('Thruster') ? 'intermediate' : 
+                         'beginner';
+  
+  const pool = exercisePools[difficultyLevel];
+
+  // Generate new exercises based on the day
+  const generateExercises = (count: number) => {
+    const exercises = [];
+    const types = ['cardio', 'strength', 'core'];
+    
+    for (let i = 0; i < count; i++) {
+      const type = types[i % types.length];
+      const exercisePool = pool[type];
+      const exerciseIndex = (dayNum + i) % exercisePool.length;
+      const exercise = exercisePool[exerciseIndex];
+      
+      exercises.push({
+        name: exercise,
+        reps: dayType === 0 ? '15x' : 
+              dayType === 1 ? `${20 + (i * 5)}x` : 
+              `${30 + (i * 10)}x`
+      });
+    }
+    return exercises;
+  };
 
   return {
-    warmup: template.warmup.map((exercise: any) => ({
-      ...exercise,
-      reps: exercise.reps.includes('min') 
-        ? `${Math.round(parseInt(exercise.reps) * multiplier)} min`
-        : exercise.reps.includes('m') 
-        ? `${Math.round(parseInt(exercise.reps) * multiplier)}m`
-        : `${Math.round(parseInt(exercise.reps) * multiplier)}x`
-    })),
+    warmup: generateExercises(3),
     workout: {
-      ...template.workout,
-      rounds: template.workout.rounds 
-        ? Math.max(3, Math.round(template.workout.rounds * (multiplier / 1.5)))
-        : undefined,
-      exercises: template.workout.exercises.map((exercise: any) => ({
-        ...exercise,
-        reps: exercise.reps.includes('min') 
-          ? `${Math.round(parseInt(exercise.reps) * multiplier)} min`
-          : exercise.reps.includes('m') 
-          ? `${Math.round(parseInt(exercise.reps) * multiplier)}m`
-          : `${Math.round(parseInt(exercise.reps) * multiplier)}x`
-      }))
+      type: dayType === 0 ? 'rounds' : 'fortime',
+      rounds: dayType === 0 ? 4 : undefined,
+      exercises: generateExercises(4)
     },
     recovery: template.recovery
   };
