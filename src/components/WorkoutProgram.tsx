@@ -683,13 +683,46 @@ const workoutTemplates: Record<string, Record<string, Record<string, {
   }
 };
 
+const generateDailyWorkout = (template: any, day: string) => {
+  // Use the day number to create variations in reps and exercises
+  const dayNum = parseInt(day);
+  const multiplier = (dayNum % 3) + 0.8; // Will give us 0.8, 1.8, or 2.8
+
+  return {
+    warmup: template.warmup.map((exercise: any) => ({
+      ...exercise,
+      reps: exercise.reps.includes('min') 
+        ? `${Math.round(parseInt(exercise.reps) * multiplier)} min`
+        : exercise.reps.includes('m') 
+        ? `${Math.round(parseInt(exercise.reps) * multiplier)}m`
+        : `${Math.round(parseInt(exercise.reps) * multiplier)}x`
+    })),
+    workout: {
+      ...template.workout,
+      rounds: template.workout.rounds 
+        ? Math.max(3, Math.round(template.workout.rounds * (multiplier / 1.5)))
+        : undefined,
+      exercises: template.workout.exercises.map((exercise: any) => ({
+        ...exercise,
+        reps: exercise.reps.includes('min') 
+          ? `${Math.round(parseInt(exercise.reps) * multiplier)} min`
+          : exercise.reps.includes('m') 
+          ? `${Math.round(parseInt(exercise.reps) * multiplier)}m`
+          : `${Math.round(parseInt(exercise.reps) * multiplier)}x`
+      }))
+    },
+    recovery: template.recovery
+  };
+};
+
 const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
   const [showTimer, setShowTimer] = useState(false);
   const [workoutType, setWorkoutType] = useState('CrossFit');
   const [difficulty, setDifficulty] = useState('Intermediate');
   const [duration, setDuration] = useState('45 min');
 
-  const workout = workoutTemplates[workoutType]?.[difficulty]?.[duration] || workoutTemplates['CrossFit']['Intermediate']['45 min'];
+  const baseWorkout = workoutTemplates[workoutType]?.[difficulty]?.[duration] || workoutTemplates['CrossFit']['Intermediate']['45 min'];
+  const workout = generateDailyWorkout(baseWorkout, selectedDay);
 
   if (showTimer) {
     return <WorkoutTimer 
@@ -716,9 +749,9 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
 
       <section className="mt-8">
         <h2 className="text-xl font-bold mb-4">WARM UP:</h2>
-        <p className="text-muted-foreground mb-4">Complete 4 rounds of the following</p>
+        <p className="text-muted-foreground mb-4">Complete the following</p>
         <div className="space-y-4">
-          {workout.warmup.map((exercise, index) => (
+          {workout.warmup.map((exercise: any, index: number) => (
             <div key={index} className="exercise-item">
               <Play className="h-5 w-5 text-primary mt-1" />
               <div>
@@ -738,7 +771,7 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
           <p className="text-muted-foreground mb-4">For time:</p>
         )}
         <div className="space-y-4">
-          {workout.workout.exercises.map((exercise, index) => (
+          {workout.workout.exercises.map((exercise: any, index: number) => (
             <div key={index} className="exercise-item">
               <Play className="h-5 w-5 text-primary mt-1" />
               <div>
