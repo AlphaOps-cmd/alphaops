@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from './ui/button';
-import { Flash, Timer, Dumbbell } from 'lucide-react';
+import { Slash, Timer, Dumbbell } from 'lucide-react';
 
 interface WorkoutSelectorProps {
   workoutType: string;
@@ -44,7 +44,7 @@ const WorkoutSelector = ({
         className="bg-transparent border-white text-white hover:bg-white/10"
         onClick={() => onDifficultyChange(cycleValue(difficulty, difficulties))}
       >
-        <Flash className="w-4 h-4 mr-2" />
+        <Slash className="w-4 h-4 mr-2" />
         {difficulty}
       </Button>
       <Button
