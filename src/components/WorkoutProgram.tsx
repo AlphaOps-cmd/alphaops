@@ -9,7 +9,8 @@ const workoutsByDay: Record<string, {
     type: 'rounds' | 'fortime',
     rounds?: number,
     exercises: Array<{ name: string, reps: string }>
-  }
+  },
+  recovery: string
 }> = {
   '20': {
     warmup: [
@@ -26,7 +27,8 @@ const workoutsByDay: Record<string, {
         { name: 'Box Jumps', reps: '20x' },
         { name: 'Pull Ups', reps: '10x' },
       ]
-    }
+    },
+    recovery: '10 minutes of light stretching focusing on shoulders and legs'
   },
   '21': {
     warmup: [
@@ -42,7 +44,8 @@ const workoutsByDay: Record<string, {
         { name: 'Double Unders', reps: '100x' },
         { name: 'Wall Balls', reps: '50x' },
       ]
-    }
+    },
+    recovery: '15 minutes of mobility work and foam rolling'
   },
   '22': {
     warmup: [
@@ -59,7 +62,8 @@ const workoutsByDay: Record<string, {
         { name: 'Burpees', reps: '15x' },
         { name: 'Ring Rows', reps: '12x' },
       ]
-    }
+    },
+    recovery: '10 minutes of yoga flow and breathing exercises'
   },
   '23': {
     warmup: [
@@ -75,7 +79,8 @@ const workoutsByDay: Record<string, {
         { name: 'Deadlifts', reps: '40x' },
         { name: 'Handstand Push Ups', reps: '30x' },
       ]
-    }
+    },
+    recovery: '12 minutes of stretching and mobility work'
   },
   '24': {
     warmup: [
@@ -92,7 +97,8 @@ const workoutsByDay: Record<string, {
         { name: 'Pull Ups', reps: '8x' },
         { name: 'Box Jumps', reps: '15x' },
       ]
-    }
+    },
+    recovery: '10 minutes of cool down and stretching'
   },
   '25': {
     warmup: [
@@ -108,7 +114,8 @@ const workoutsByDay: Record<string, {
         { name: 'Wall Balls', reps: '50x' },
         { name: 'Burpees', reps: '30x' },
       ]
-    }
+    },
+    recovery: '15 minutes of mobility and foam rolling'
   },
   '26': {
     warmup: [
@@ -125,7 +132,8 @@ const workoutsByDay: Record<string, {
         { name: 'Ring Muscle Ups', reps: '5x' },
         { name: 'Overhead Squats', reps: '10x' },
       ]
-    }
+    },
+    recovery: '12 minutes of stretching and mobility work'
   },
 };
 
@@ -181,6 +189,13 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-xl font-bold mb-4">RECOVERY:</h2>
+        <div className="p-4 border rounded-lg">
+          <p className="text-muted-foreground">{workout.recovery}</p>
         </div>
       </section>
 

@@ -1,13 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Trophy, Share, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import confetti from 'canvas-confetti';
 
 interface WorkoutStats {
   totalTime: number;
   roundTimes?: number[];
+  warmup: Array<{
+    name: string;
+    reps: string;
+    weight?: string;
+  }>;
   exercises: Array<{
     name: string;
     reps: string;
@@ -15,12 +21,46 @@ interface WorkoutStats {
   }>;
   type: 'rounds' | 'fortime';
   rounds?: number;
+  recovery?: string;
 }
 
 const WorkoutComplete = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const workoutStats = location.state?.workoutStats as WorkoutStats;
+
+  useEffect(() => {
+    const duration = 3000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+    const randomInRange = (min: number, max: number) => {
+      return Math.random() * (max - min) + min;
+    }
+
+    const interval: NodeJS.Timeout = setInterval(() => {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+      });
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+      });
+    }, 250);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -92,20 +132,49 @@ const WorkoutComplete = () => {
         <CardHeader>
           <h2 className="text-2xl font-semibold">Workout Details</h2>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {workoutStats.exercises.map((exercise, index) => (
-            <div key={index} className="flex flex-col gap-2 p-3 border rounded-lg">
-              <div className="flex justify-between items-center">
-                <span className="font-medium">{exercise.name}</span>
-                <span className="text-muted-foreground">{exercise.reps}</span>
-              </div>
-              {exercise.weight && (
-                <div className="text-sm text-muted-foreground">
-                  Weight used: {exercise.weight}
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <h3 className="font-semibold text-lg">Warm Up</h3>
+            {workoutStats.warmup.map((exercise, index) => (
+              <div key={index} className="flex flex-col gap-2 p-3 border rounded-lg">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">{exercise.name}</span>
+                  <span className="text-muted-foreground">{exercise.reps}</span>
                 </div>
-              )}
+                {exercise.weight && (
+                  <div className="text-sm text-muted-foreground">
+                    Weight used: {exercise.weight}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="font-semibold text-lg">Workout</h3>
+            {workoutStats.exercises.map((exercise, index) => (
+              <div key={index} className="flex flex-col gap-2 p-3 border rounded-lg">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">{exercise.name}</span>
+                  <span className="text-muted-foreground">{exercise.reps}</span>
+                </div>
+                {exercise.weight && (
+                  <div className="text-sm text-muted-foreground">
+                    Weight used: {exercise.weight}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {workoutStats.recovery && (
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg">Recovery</h3>
+              <div className="p-3 border rounded-lg">
+                <p className="text-muted-foreground">{workoutStats.recovery}</p>
+              </div>
             </div>
-          ))}
+          )}
         </CardContent>
       </Card>
 
