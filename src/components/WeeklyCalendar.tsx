@@ -10,17 +10,18 @@ const days = [
   { day: 'Sun', date: '26' },
 ];
 
-const WeeklyCalendar = () => {
+const WeeklyCalendar = ({ selectedDay = '24', onSelectDay }: { selectedDay?: string, onSelectDay?: (date: string) => void }) => {
   return (
     <div className="grid grid-cols-7 gap-2 p-4 bg-card rounded-lg">
       {days.map((item, index) => (
-        <div
+        <button
           key={index}
-          className={`calendar-day ${item.date === '24' ? 'active' : ''}`}
+          onClick={() => onSelectDay?.(item.date)}
+          className={`calendar-day ${item.date === selectedDay ? 'active' : ''}`}
         >
           <span className="text-sm">{item.day}</span>
           <span className="text-lg font-bold">{item.date}</span>
-        </div>
+        </button>
       ))}
     </div>
   );
