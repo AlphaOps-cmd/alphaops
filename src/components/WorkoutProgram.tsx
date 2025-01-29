@@ -742,4 +742,35 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
             <div key={index} className="exercise-item">
               <Play className="h-5 w-5 text-primary mt-1" />
               <div>
-                <h3 className="font-semibol
+                <h3 className="font-semibold">{exercise.name}</h3>
+                <p className="text-muted-foreground">- {exercise.reps}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-xl font-bold mb-4">RECOVERY:</h2>
+        <div className="exercise-item">
+          <Play className="h-5 w-5 text-primary mt-1" />
+          <div>
+            <h3 className="font-semibold">Cool Down</h3>
+            <p className="text-muted-foreground">- {workout.recovery}</p>
+          </div>
+        </div>
+      </section>
+
+      <div className="mt-8 flex justify-center">
+        <Button 
+          onClick={() => setShowTimer(true)}
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
+        >
+          Start Workout
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export default WorkoutProgram;
