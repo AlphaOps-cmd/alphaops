@@ -9,7 +9,7 @@ import confetti from 'canvas-confetti';
 interface WorkoutStats {
   totalTime: number;
   roundTimes?: number[];
-  warmup: Array<{
+  warmup?: Array<{
     name: string;
     reps: string;
     weight?: string;
@@ -133,22 +133,24 @@ const WorkoutComplete = () => {
           <h2 className="text-2xl font-semibold">Workout Details</h2>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Warm Up</h3>
-            {workoutStats.warmup.map((exercise, index) => (
-              <div key={index} className="flex flex-col gap-2 p-3 border rounded-lg">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium">{exercise.name}</span>
-                  <span className="text-muted-foreground">{exercise.reps}</span>
-                </div>
-                {exercise.weight && (
-                  <div className="text-sm text-muted-foreground">
-                    Weight used: {exercise.weight}
+          {workoutStats.warmup && workoutStats.warmup.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg">Warm Up</h3>
+              {workoutStats.warmup.map((exercise, index) => (
+                <div key={index} className="flex flex-col gap-2 p-3 border rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">{exercise.name}</span>
+                    <span className="text-muted-foreground">{exercise.reps}</span>
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
+                  {exercise.weight && (
+                    <div className="text-sm text-muted-foreground">
+                      Weight used: {exercise.weight}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="space-y-4">
             <h3 className="font-semibold text-lg">Workout</h3>

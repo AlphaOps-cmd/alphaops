@@ -80,6 +80,7 @@ const WorkoutTimer = ({ onClose, warmup, workout }: WorkoutTimerProps) => {
           workoutStats: {
             totalTime: time,
             roundTimes: workout.type === 'rounds' ? [...roundTimes, roundTime] : undefined,
+            warmup: warmup,
             exercises: workout.exercises,
             type: workout.type,
             rounds: workout.rounds
