@@ -684,7 +684,6 @@ const workoutTemplates: Record<string, Record<string, Record<string, {
 };
 
 const generateDailyWorkout = (template: any, day: string) => {
-  // Use the day number to select different exercises
   const dayNum = parseInt(day);
   const dayType = dayNum % 3; // 0, 1, or 2 for different workout types
 
@@ -707,14 +706,12 @@ const generateDailyWorkout = (template: any, day: string) => {
     }
   };
 
-  // Select exercises based on difficulty
   const difficultyLevel = template.workout.exercises[0].name.includes('Muscle Up') ? 'advanced' :
                          template.workout.exercises[0].name.includes('Thruster') ? 'intermediate' : 
                          'beginner';
   
   const pool = exercisePools[difficultyLevel];
 
-  // Generate new exercises based on the day
   const generateExercises = (count: number) => {
     const exercises = [];
     const types = ['cardio', 'strength', 'core'];
@@ -735,11 +732,13 @@ const generateDailyWorkout = (template: any, day: string) => {
     return exercises;
   };
 
+  const workoutType: 'rounds' | 'fortime' = dayType === 0 ? 'rounds' : 'fortime';
+
   return {
     warmup: generateExercises(3),
     workout: {
-      type: dayType === 0 ? 'rounds' : 'fortime',
-      rounds: dayType === 0 ? 4 : undefined,
+      type: workoutType,
+      rounds: workoutType === 'rounds' ? 4 : undefined,
       exercises: generateExercises(4)
     },
     recovery: template.recovery
@@ -838,3 +837,4 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
 };
 
 export default WorkoutProgram;
+
