@@ -6,12 +6,24 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+
+const passwordSchema = z.object({
+  currentPassword: z.string().min(6, "Password must be at least 6 characters"),
+  newPassword: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string()
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
 
 const Settings = () => {
   const { toast } = useToast();
@@ -26,12 +38,32 @@ const Settings = () => {
   const [trainingDays, setTrainingDays] = useState<string[]>(["MON", "TUE", "THU", "FRI"]);
   const [weight, setWeight] = useState("");
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [bodyWeight, setBodyWeight] = useState("");
+  const [squatRM, setSquatRM] = useState("");
+  const [deadliftRM, setDeadliftRM] = useState("");
+  const [benchRM, setBenchRM] = useState("");
+  const [cleanRM, setCleanRM] = useState("");
+  const [snatchRM, setSnatchRM] = useState("");
 
-  const handleSaveChanges = () => {
+  const form = useForm<z.infer<typeof passwordSchema>>({
+    resolver: zodResolver(passwordSchema),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
+
+  const handlePasswordChange = (values: z.infer<typeof passwordSchema>) => {
+    // Here you would typically make an API call to change the password
+    console.log("Password change values:", values);
     toast({
-      title: "Settings saved",
-      description: "Your preferences have been updated successfully.",
+      title: "Password updated",
+      description: "Your password has been changed successfully.",
     });
+    setIsPasswordDialogOpen(false);
+    form.reset();
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,18 +81,33 @@ const Settings = () => {
     setProfileImage(null);
   };
 
+  const handleSaveChanges = () => {
+    toast({
+      title: "Settings saved",
+      description: "Your preferences have been updated successfully.",
+    });
+  };
+
+  const updateMetric = (value: string, setter: (value: string) => void, metricName: string) => {
+    setter(value);
+    toast({
+      title: `${metricName} updated`,
+      description: `Your ${metricName.toLowerCase()} has been updated to ${value} ${units}.`,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground pb-20">
       {/* Back Button */}
       <button 
         onClick={() => navigate('/')} 
-        className="absolute top-4 left-4 p-2 text-muted-foreground hover:text-foreground"
+        className="fixed top-4 left-4 p-2 text-muted-foreground hover:text-foreground z-50"
       >
         <ArrowLeft className="h-6 w-6" />
       </button>
 
       {/* Header */}
-      <div className="bg-black p-4 flex items-center justify-center gap-2 sticky top-0 z-50">
+      <div className="bg-black p-4 flex items-center justify-center gap-2 sticky top-0 z-40">
         <SettingsIcon className="h-5 w-5" />
         <h1 className="text-xl font-bold">Settings</h1>
       </div>
@@ -131,6 +178,67 @@ const Settings = () => {
                 <Input value="Premium" disabled />
               </div>
             </div>
+
+            {/* Password Change Dialog */}
+            <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full">
+                  Change Password
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Change Password</DialogTitle>
+                  <DialogDescription>
+                    Enter your current password and choose a new one
+                  </DialogDescription>
+                </DialogHeader>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(handlePasswordChange)} className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="currentPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Current Password</FormLabel>
+                          <FormControl>
+                            <Input type="password" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="newPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>New Password</FormLabel>
+                          <FormControl>
+                            <Input type="password" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Confirm New Password</FormLabel>
+                          <FormControl>
+                            <Input type="password" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button type="submit" className="w-full">Update Password</Button>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
           </CardContent>
         </Card>
 
@@ -232,20 +340,72 @@ const Settings = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Body Weight</Label>
+              <Label>Body Weight ({units})</Label>
               <div className="flex gap-2">
                 <Input
                   type="number"
                   placeholder="Enter weight"
-                  value={weight}
-                  onChange={(e) => setWeight(e.target.value)}
+                  value={bodyWeight}
+                  onChange={(e) => updateMetric(e.target.value, setBodyWeight, "Body Weight")}
                 />
-                <span className="flex items-center">{units}</span>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Back Squat 1RM ({units})</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  placeholder="Enter weight"
+                  value={squatRM}
+                  onChange={(e) => updateMetric(e.target.value, setSquatRM, "Back Squat 1RM")}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Deadlift 1RM ({units})</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  placeholder="Enter weight"
+                  value={deadliftRM}
+                  onChange={(e) => updateMetric(e.target.value, setDeadliftRM, "Deadlift 1RM")}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Bench Press 1RM ({units})</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  placeholder="Enter weight"
+                  value={benchRM}
+                  onChange={(e) => updateMetric(e.target.value, setBenchRM, "Bench Press 1RM")}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Clean 1RM ({units})</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  placeholder="Enter weight"
+                  value={cleanRM}
+                  onChange={(e) => updateMetric(e.target.value, setCleanRM, "Clean 1RM")}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Snatch 1RM ({units})</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  placeholder="Enter weight"
+                  value={snatchRM}
+                  onChange={(e) => updateMetric(e.target.value, setSnatchRM, "Snatch 1RM")}
+                />
               </div>
             </div>
             <Button variant="outline" className="w-full">Export Training Data</Button>
-            <Button variant="outline" className="w-full">Update Personal Records</Button>
-            <Button variant="outline" className="w-full">Modify Monthly Goals</Button>
           </CardContent>
         </Card>
 
@@ -254,7 +414,6 @@ const Settings = () => {
           Save Changes
         </Button>
 
-        {/* Account Management */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
