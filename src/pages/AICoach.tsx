@@ -1,26 +1,11 @@
 import { useState } from "react";
-import { Brain, Settings, Mic, ThumbsUp, ThumbsDown, MessageSquare } from "lucide-react";
+import { Brain, Mic, ThumbsUp, ThumbsDown, MessageSquare, ArrowLeft, ArrowRight } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import PremiumFeatureModal from "@/components/PremiumFeatureModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer
-} from "recharts";
-
-const mockChartData = [
-  { month: 'Jan', squat: 100, deadlift: 140, consistency: 85 },
-  { month: 'Feb', squat: 110, deadlift: 150, consistency: 90 },
-  { month: 'Mar', squat: 120, deadlift: 160, consistency: 88 },
-];
 
 const mockRecommendations = [
   {
@@ -64,14 +49,15 @@ const AICoach = () => {
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
-  const isPremiumUser = true; // This should be replaced with actual premium status check
+  const [currentRecommendation, setCurrentRecommendation] = useState(0);
+  const isPremiumUser = true;
 
-  const handleSendMessage = () => {
-    if (!inputMessage.trim()) return;
+  const handleSendMessage = (message: string = inputMessage) => {
+    if (!message.trim()) return;
     
     const newMessages: Message[] = [
       ...messages,
-      { role: "user" as const, content: inputMessage },
+      { role: "user" as const, content: message },
       { role: "ai" as const, content: "Gracias por tu mensaje. Esta es una respuesta de ejemplo de la IA. En la implementación final, esto se conectará con un servicio de IA real." }
     ];
     
@@ -79,8 +65,16 @@ const AICoach = () => {
     setInputMessage("");
   };
 
-  const handleQuickQuestion = (question: string) => {
-    setInputMessage(question);
+  const handleNextRecommendation = () => {
+    setCurrentRecommendation((prev) => 
+      prev === mockRecommendations.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const handlePrevRecommendation = () => {
+    setCurrentRecommendation((prev) => 
+      prev === 0 ? mockRecommendations.length - 1 : prev - 1
+    );
   };
 
   if (!isPremiumUser) {
@@ -95,150 +89,109 @@ const AICoach = () => {
   return (
     <div className="min-h-screen pb-20 bg-background">
       {/* Header */}
-      <div className="p-4 border-b flex items-center justify-between">
+      <div className="p-4 border-b">
         <div className="flex items-center gap-2">
           <Brain className="h-6 w-6 text-primary" />
           <h1 className="text-2xl font-bold">AlphaOps AI Coach</h1>
         </div>
-        <Button variant="ghost" size="icon">
-          <Settings className="h-5 w-5" />
-        </Button>
       </div>
 
-      <div className="container mx-auto p-4 space-y-6">
+      <div className="container mx-auto p-4 space-y-6 max-w-3xl">
         {/* Recommendations Section */}
         <section>
           <h2 className="text-xl font-semibold mb-4">Recomendaciones Inteligentes</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {mockRecommendations.map((rec, index) => (
-              <Card key={index} className={`border ${rec.color}`}>
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-4">
-                    <span className="text-2xl">{rec.icon}</span>
-                    <div className="flex-1">
-                      <p className="text-sm">{rec.message}</p>
-                      <div className="flex gap-2 mt-2">
-                        <Button variant="ghost" size="sm">
-                          <ThumbsUp className="h-4 w-4 mr-1" />
-                          Útil
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <ThumbsDown className="h-4 w-4 mr-1" />
-                          No útil
-                        </Button>
-                      </div>
+          <div className="relative">
+            <Card className={`border ${mockRecommendations[currentRecommendation].color}`}>
+              <CardContent className="p-4">
+                <div className="flex items-start gap-4">
+                  <span className="text-2xl">{mockRecommendations[currentRecommendation].icon}</span>
+                  <div className="flex-1">
+                    <p className="text-sm">{mockRecommendations[currentRecommendation].message}</p>
+                    <div className="flex gap-2 mt-2">
+                      <Button variant="ghost" size="sm">
+                        <ThumbsUp className="h-4 w-4 mr-1" />
+                        Útil
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <ThumbsDown className="h-4 w-4 mr-1" />
+                        No útil
+                      </Button>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                </div>
+              </CardContent>
+            </Card>
+            <div className="absolute inset-y-0 left-0 flex items-center">
+              <Button variant="ghost" size="icon" onClick={handlePrevRecommendation}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="absolute inset-y-0 right-0 flex items-center">
+              <Button variant="ghost" size="icon" onClick={handleNextRecommendation}>
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </section>
 
         {/* Chat Section */}
-        <section className="grid md:grid-cols-[1fr_300px] gap-4">
-          <Card className="h-[500px] flex flex-col">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                Chat con AlphaOps AI
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 flex flex-col">
-              <ScrollArea className="flex-1 pr-4">
-                {messages.map((message, index) => (
+        <Card className="h-[500px] flex flex-col">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Chat con AlphaOps AI
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1 flex flex-col">
+            <ScrollArea className="flex-1 pr-4">
+              {messages.map((message, index) => (
+                <div
+                  key={index}
+                  className={`mb-4 ${
+                    message.role === 'user' ? 'ml-auto' : 'mr-auto'
+                  }`}
+                >
                   <div
-                    key={index}
-                    className={`mb-4 ${
-                      message.role === 'user' ? 'ml-auto' : 'mr-auto'
+                    className={`p-3 rounded-lg max-w-[80%] ${
+                      message.role === 'user'
+                        ? 'bg-primary text-primary-foreground ml-auto'
+                        : 'bg-muted'
                     }`}
                   >
-                    <div
-                      className={`p-3 rounded-lg max-w-[80%] ${
-                        message.role === 'user'
-                          ? 'bg-primary text-primary-foreground ml-auto'
-                          : 'bg-muted'
-                      }`}
-                    >
-                      {message.content}
-                    </div>
+                    {message.content}
                   </div>
-                ))}
-              </ScrollArea>
-              <div className="mt-4 flex gap-2">
-                <Button variant="outline" size="icon">
-                  <Mic className="h-4 w-4" />
-                </Button>
-                <Input
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  placeholder="Escribe tu mensaje..."
-                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                />
-                <Button onClick={handleSendMessage}>Enviar</Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Preguntas Rápidas</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
+                </div>
+              ))}
+            </ScrollArea>
+            
+            {/* Quick Questions */}
+            <div className="grid gap-2 mb-4">
               {quickQuestions.map((question, index) => (
                 <Button
                   key={index}
                   variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => handleQuickQuestion(question)}
+                  className="w-full justify-start text-sm"
+                  onClick={() => handleSendMessage(question)}
                 >
                   {question}
                 </Button>
               ))}
-            </CardContent>
-          </Card>
-        </section>
+            </div>
 
-        {/* Analytics Section */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4">Análisis de Progreso</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Tendencias de Fuerza</CardTitle>
-              </CardHeader>
-              <CardContent className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={mockChartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line type="monotone" dataKey="squat" stroke="#10b981" name="Squat" />
-                    <Line type="monotone" dataKey="deadlift" stroke="#3b82f6" name="Deadlift" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Consistencia de Entrenamiento</CardTitle>
-              </CardHeader>
-              <CardContent className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={mockChartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line type="monotone" dataKey="consistency" stroke="#f59e0b" name="Consistencia %" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
+            <div className="flex gap-2">
+              <Button variant="outline" size="icon">
+                <Mic className="h-4 w-4" />
+              </Button>
+              <Input
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                placeholder="Escribe tu mensaje..."
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              />
+              <Button onClick={() => handleSendMessage()}>Enviar</Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <BottomNav />
