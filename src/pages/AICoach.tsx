@@ -156,30 +156,32 @@ const AICoach = () => {
               Chat con AlphaOps AI
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex-1 flex flex-col">
-            <ScrollArea className="flex-1 mb-4">
-              {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`mb-4 ${
-                    message.role === 'user' ? 'ml-auto' : 'mr-auto'
-                  }`}
-                >
+          <CardContent className="flex-1 flex flex-col overflow-hidden">
+            <ScrollArea className="flex-1 mb-4 pr-4">
+              <div className="flex flex-col space-y-4">
+                {messages.map((message, index) => (
                   <div
-                    className={`p-3 rounded-lg max-w-[80%] ${
-                      message.role === 'user'
-                        ? 'bg-primary text-primary-foreground ml-auto'
-                        : 'bg-muted'
+                    key={index}
+                    className={`${
+                      message.role === 'user' ? 'ml-auto' : 'mr-auto'
                     }`}
                   >
-                    {message.content}
+                    <div
+                      className={`p-3 rounded-lg max-w-[80%] ${
+                        message.role === 'user'
+                          ? 'bg-primary text-primary-foreground ml-auto'
+                          : 'bg-muted'
+                      }`}
+                    >
+                      {message.content}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </ScrollArea>
             
-            {/* Quick Questions - Scrollable */}
-            <div className="relative mb-4 h-12">
+            {/* Quick Questions - Scrollable with fixed height */}
+            <div className="relative mb-4 h-12 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <Button
                   variant="ghost"
@@ -191,10 +193,12 @@ const AICoach = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full mx-8 justify-start text-sm text-left whitespace-normal h-10"
+                  className="w-full mx-8 justify-start text-sm text-left truncate px-3"
                   onClick={() => handleSendMessage(quickQuestions[currentQuestionIndex])}
                 >
-                  {quickQuestions[currentQuestionIndex]}
+                  <span className="truncate block">
+                    {quickQuestions[currentQuestionIndex]}
+                  </span>
                 </Button>
                 <Button
                   variant="ghost"
@@ -207,7 +211,8 @@ const AICoach = () => {
               </div>
             </div>
 
-            <div className="flex gap-2 mt-auto">
+            {/* Input Section - Fixed at bottom */}
+            <div className="flex gap-2 mt-auto flex-shrink-0">
               <Button variant="outline" size="icon">
                 <Mic className="h-4 w-4" />
               </Button>
@@ -216,6 +221,7 @@ const AICoach = () => {
                 onChange={(e) => setInputMessage(e.target.value)}
                 placeholder="Escribe tu mensaje..."
                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                className="flex-1"
               />
               <Button onClick={() => handleSendMessage()}>Enviar</Button>
             </div>
