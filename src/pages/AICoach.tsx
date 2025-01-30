@@ -79,7 +79,6 @@ const AICoach = () => {
 
   const handlePremiumModalClose = () => {
     setShowPremiumModal(false);
-    navigate("/"); // Navigate back to home when modal is closed
   };
 
   const handleSendMessage = (message: string = inputMessage) => {
@@ -119,54 +118,56 @@ const AICoach = () => {
     );
   };
 
-  if (userType === "standard") {
-    return <PremiumFeatureModal isOpen={showPremiumModal} onClose={handlePremiumModalClose} />;
-  }
-
   return (
-    <div className="min-h-screen pb-20 bg-background">
-      <div className="p-4 border-b">
-        <div className="flex items-center gap-2">
-          <Brain className="h-6 w-6 text-primary" />
-          <h1 className="text-2xl font-bold">AlphaOps AI Coach</h1>
+    <>
+      {userType === "standard" && showPremiumModal ? (
+        <PremiumFeatureModal isOpen={showPremiumModal} onClose={handlePremiumModalClose} />
+      ) : (
+        <div className="min-h-screen pb-20 bg-background">
+          <div className="p-4 border-b">
+            <div className="flex items-center gap-2">
+              <Brain className="h-6 w-6 text-primary" />
+              <h1 className="text-2xl font-bold">AlphaOps AI Coach</h1>
+            </div>
+          </div>
+
+          <div className="container mx-auto p-4 space-y-6 max-w-3xl">
+            <section>
+              <h2 className="text-xl font-semibold mb-4">Recomendaciones Inteligentes</h2>
+              <AIRecommendations
+                recommendation={mockRecommendations[currentRecommendation]}
+                onPrev={handlePrevRecommendation}
+                onNext={handleNextRecommendation}
+              />
+            </section>
+
+            <Card className="h-[500px] flex flex-col">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  Chat con AlphaOps AI
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 flex flex-col overflow-hidden">
+                <ChatMessages messages={messages} />
+                <QuickQuestions
+                  currentQuestion={quickQuestions[currentQuestionIndex]}
+                  onPrevQuestion={handlePrevQuestion}
+                  onNextQuestion={handleNextQuestion}
+                  onSelectQuestion={handleSendMessage}
+                />
+                <ChatInput
+                  value={inputMessage}
+                  onChange={setInputMessage}
+                  onSend={() => handleSendMessage()}
+                />
+              </CardContent>
+            </Card>
+          </div>
+
+          <BottomNav />
         </div>
-      </div>
-
-      <div className="container mx-auto p-4 space-y-6 max-w-3xl">
-        <section>
-          <h2 className="text-xl font-semibold mb-4">Recomendaciones Inteligentes</h2>
-          <AIRecommendations
-            recommendation={mockRecommendations[currentRecommendation]}
-            onPrev={handlePrevRecommendation}
-            onNext={handleNextRecommendation}
-          />
-        </section>
-
-        <Card className="h-[500px] flex flex-col">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              Chat con AlphaOps AI
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 flex flex-col overflow-hidden">
-            <ChatMessages messages={messages} />
-            <QuickQuestions
-              currentQuestion={quickQuestions[currentQuestionIndex]}
-              onPrevQuestion={handlePrevQuestion}
-              onNextQuestion={handleNextQuestion}
-              onSelectQuestion={handleSendMessage}
-            />
-            <ChatInput
-              value={inputMessage}
-              onChange={setInputMessage}
-              onSend={() => handleSendMessage()}
-            />
-          </CardContent>
-        </Card>
-      </div>
-
-      <BottomNav />
-    </div>
+      )}
+    </>
   );
 };
 
