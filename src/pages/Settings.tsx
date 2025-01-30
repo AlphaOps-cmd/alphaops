@@ -1,12 +1,11 @@
-import { Bell, Database, HelpCircle, LogOut, Moon, Settings as SettingsIcon, Sun, User, ArrowLeft, Camera, Trash2, MessageSquare } from "lucide-react";
+import { Bell, Database, HelpCircle, LogOut, Moon, Settings as SettingsIcon, Sun, User, ArrowLeft, Camera, Trash2, MessageSquare, Calendar, Weight, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -52,6 +51,11 @@ const Settings = () => {
     sunday: false,
   });
 
+  // Effect to handle dark mode changes
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', darkMode);
+  }, [darkMode]);
+
   const form = useForm<z.infer<typeof passwordSchema>>({
     resolver: zodResolver(passwordSchema),
     defaultValues: {
@@ -86,6 +90,7 @@ const Settings = () => {
       title: "Language updated",
       description: `App language changed to ${value === 'es' ? 'Spanish' : 'English'}`,
     });
+    console.log("Language changed to:", value);
   };
 
   const handleUnitsChange = (value: string) => {
@@ -110,6 +115,37 @@ const Settings = () => {
       ...prev,
       [day]: !prev[day as keyof typeof prev]
     }));
+    toast({
+      title: "Training schedule updated",
+      description: "Your training schedule has been updated successfully.",
+    });
+  };
+
+  const handleMonthlyGoalChange = (value: string) => {
+    setMonthlyGoal(value);
+    toast({
+      title: "Monthly goal updated",
+      description: `Your monthly training goal has been set to ${value} workouts`,
+    });
+  };
+
+  const handleHapticsChange = (checked: boolean) => {
+    setHaptics(checked);
+    toast({
+      title: checked ? "Haptics enabled" : "Haptics disabled",
+      description: "Your haptic feedback preference has been saved.",
+    });
+  };
+
+  const handleNotificationChange = (key: keyof typeof notifications, checked: boolean) => {
+    setNotifications(prev => ({
+      ...prev,
+      [key]: checked
+    }));
+    toast({
+      title: "Notification settings updated",
+      description: "Your notification preferences have been saved.",
+    });
   };
 
   const handleSaveChanges = () => {
@@ -125,18 +161,18 @@ const Settings = () => {
     const type = formData.get('type');
     const description = formData.get('description');
 
+    console.log("Feedback submitted:", { type, description });
+
     toast({
       title: "Feedback Submitted",
       description: "Thank you for your feedback. We'll review it shortly.",
     });
 
-    // Reset form
     (event.target as HTMLFormElement).reset();
   };
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-20">
-      {/* Back Button */}
       <button 
         onClick={() => navigate('/')} 
         className="fixed top-4 left-4 p-2 text-muted-foreground hover:text-foreground z-50"
@@ -144,13 +180,13 @@ const Settings = () => {
         <ArrowLeft className="h-6 w-6" />
       </button>
 
-      {/* Header */}
       <div className="bg-black p-4 flex items-center justify-center gap-2 sticky top-0 z-40">
         <SettingsIcon className="h-5 w-5" />
         <h1 className="text-xl font-bold">Settings</h1>
       </div>
 
       <div className="container max-w-2xl mx-auto p-4 space-y-6">
+        {/* Profile Section */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -268,7 +304,7 @@ const Settings = () => {
           </CardContent>
         </Card>
 
-        {/* Data Management */}
+        {/* Data Management Section */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -314,11 +350,11 @@ const Settings = () => {
           </CardContent>
         </Card>
 
-        {/* Training Preferences */}
+        {/* Training Preferences Section */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <SettingsIcon className="h-5 w-5" />
+              <Calendar className="h-5 w-5" />
               Training Preferences
             </CardTitle>
           </CardHeader>
@@ -343,7 +379,7 @@ const Settings = () => {
               <Input
                 type="number"
                 value={monthlyGoal}
-                onChange={(e) => setMonthlyGoal(e.target.value)}
+                onChange={(e) => handleMonthlyGoalChange(e.target.value)}
                 min="1"
                 max="31"
                 placeholder="Enter number of workouts"
@@ -355,6 +391,7 @@ const Settings = () => {
           </CardContent>
         </Card>
 
+        {/* Notifications Section */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -372,8 +409,7 @@ const Settings = () => {
               </div>
               <Switch
                 checked={notifications.trainingReminders}
-                onCheckedChange={(checked) => 
-                  setNotifications(prev => ({ ...prev, trainingReminders: checked }))}
+                onCheckedChange={(checked) => handleNotificationChange('trainingReminders', checked)}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -385,8 +421,7 @@ const Settings = () => {
               </div>
               <Switch
                 checked={notifications.monthlyProgress}
-                onCheckedChange={(checked) => 
-                  setNotifications(prev => ({ ...prev, monthlyProgress: checked }))}
+                onCheckedChange={(checked) => handleNotificationChange('monthlyProgress', checked)}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -398,8 +433,7 @@ const Settings = () => {
               </div>
               <Switch
                 checked={notifications.aiCoachInsights}
-                onCheckedChange={(checked) => 
-                  setNotifications(prev => ({ ...prev, aiCoachInsights: checked }))}
+                onCheckedChange={(checked) => handleNotificationChange('aiCoachInsights', checked)}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -411,8 +445,7 @@ const Settings = () => {
               </div>
               <Switch
                 checked={notifications.promotionalOffers}
-                onCheckedChange={(checked) => 
-                  setNotifications(prev => ({ ...prev, promotionalOffers: checked }))}
+                onCheckedChange={(checked) => handleNotificationChange('promotionalOffers', checked)}
               />
             </div>
           </CardContent>
@@ -460,7 +493,7 @@ const Settings = () => {
               </div>
               <Switch
                 checked={haptics}
-                onCheckedChange={setHaptics}
+                onCheckedChange={handleHapticsChange}
               />
             </div>
             <div className="space-y-2">
@@ -478,6 +511,7 @@ const Settings = () => {
           </CardContent>
         </Card>
 
+        {/* Support & Feedback */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -489,7 +523,7 @@ const Settings = () => {
             <form onSubmit={handleFeedbackSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label>Type</Label>
-                <Select defaultValue="bug">
+                <Select defaultValue="bug" name="type">
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -503,6 +537,7 @@ const Settings = () => {
               <div className="space-y-2">
                 <Label>Description</Label>
                 <Textarea
+                  name="description"
                   placeholder="Describe the issue or suggestion..."
                   className="min-h-[100px]"
                 />
@@ -519,6 +554,7 @@ const Settings = () => {
           Save Changes
         </Button>
 
+        {/* Account Section */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
