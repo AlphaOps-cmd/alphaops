@@ -37,7 +37,9 @@ const mockRecommendations = [
 const quickQuestions = [
   "¿Cómo mejoro mi resistencia en Hyrox?",
   "Dime cómo mejorar mi técnica en Muscle-ups",
-  "Dame un plan de entrenamiento para Special Forces"
+  "Dame un plan de entrenamiento para Special Forces",
+  "¿Cuál es el mejor ejercicio para ganar fuerza?",
+  "¿Cómo puedo mejorar mi recuperación?",
 ];
 
 interface Message {
@@ -50,6 +52,7 @@ const AICoach = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [currentRecommendation, setCurrentRecommendation] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const isPremiumUser = true;
 
   const handleSendMessage = (message: string = inputMessage) => {
@@ -77,6 +80,18 @@ const AICoach = () => {
     );
   };
 
+  const handleNextQuestion = () => {
+    setCurrentQuestionIndex((prev) =>
+      prev === quickQuestions.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const handlePrevQuestion = () => {
+    setCurrentQuestionIndex((prev) =>
+      prev === 0 ? quickQuestions.length - 1 : prev - 1
+    );
+  };
+
   if (!isPremiumUser) {
     return (
       <PremiumFeatureModal
@@ -88,7 +103,6 @@ const AICoach = () => {
 
   return (
     <div className="min-h-screen pb-20 bg-background">
-      {/* Header */}
       <div className="p-4 border-b">
         <div className="flex items-center gap-2">
           <Brain className="h-6 w-6 text-primary" />
@@ -143,7 +157,7 @@ const AICoach = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 flex flex-col">
-            <ScrollArea className="flex-1 pr-4">
+            <ScrollArea className="flex-1 mb-4">
               {messages.map((message, index) => (
                 <div
                   key={index}
@@ -164,21 +178,36 @@ const AICoach = () => {
               ))}
             </ScrollArea>
             
-            {/* Quick Questions - Updated with proper width constraints */}
-            <div className="grid gap-2 mb-4 w-full">
-              {quickQuestions.map((question, index) => (
+            {/* Quick Questions - Scrollable */}
+            <div className="relative mb-4 h-12">
+              <div className="flex items-center justify-between">
                 <Button
-                  key={index}
-                  variant="outline"
-                  className="w-full justify-start text-sm text-left whitespace-normal h-auto py-2"
-                  onClick={() => handleSendMessage(question)}
+                  variant="ghost"
+                  size="icon"
+                  onClick={handlePrevQuestion}
+                  className="absolute left-0 z-10"
                 >
-                  {question}
+                  <ArrowLeft className="h-4 w-4" />
                 </Button>
-              ))}
+                <Button
+                  variant="outline"
+                  className="w-full mx-8 justify-start text-sm text-left whitespace-normal h-10"
+                  onClick={() => handleSendMessage(quickQuestions[currentQuestionIndex])}
+                >
+                  {quickQuestions[currentQuestionIndex]}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleNextQuestion}
+                  className="absolute right-0 z-10"
+                >
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 mt-auto">
               <Button variant="outline" size="icon">
                 <Mic className="h-4 w-4" />
               </Button>
