@@ -6,14 +6,28 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
 
 export const ProfileSection = () => {
   const { toast } = useToast();
+  const [membership, setMembership] = useState(() => {
+    return localStorage.getItem('membership') || 'standard';
+  });
 
   const handleChangePassword = () => {
     toast({
       title: "Change password",
       description: "Password change functionality will be implemented soon.",
+    });
+  };
+
+  const handleMembershipChange = (value: string) => {
+    setMembership(value);
+    localStorage.setItem('membership', value);
+    toast({
+      title: "Membership updated",
+      description: `Your membership has been updated to ${value}`,
     });
   };
 
@@ -65,7 +79,15 @@ export const ProfileSection = () => {
           </div>
           <div>
             <Label>Membership</Label>
-            <Input value="Premium" disabled />
+            <Select value={membership} onValueChange={handleMembershipChange}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="standard">Standard</SelectItem>
+                <SelectItem value="premium">Premium</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <Button 
             variant="outline" 
