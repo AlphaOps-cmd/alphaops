@@ -1,4 +1,4 @@
-import { Bell, Database, HelpCircle, LogOut, Moon, Settings as SettingsIcon, Sun, User } from "lucide-react";
+import { Bell, Database, HelpCircle, LogOut, Moon, Settings as SettingsIcon, Sun, User, ArrowLeft, Camera, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -9,9 +9,13 @@ import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const Settings = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(true);
   const [selectedWorkoutType, setSelectedWorkoutType] = useState("crossfit");
   const [difficulty, setDifficulty] = useState("intermediate");
@@ -20,6 +24,8 @@ const Settings = () => {
   const [notifications, setNotifications] = useState(true);
   const [haptics, setHaptics] = useState(true);
   const [trainingDays, setTrainingDays] = useState<string[]>(["MON", "TUE", "THU", "FRI"]);
+  const [weight, setWeight] = useState("");
+  const [profileImage, setProfileImage] = useState<string | null>(null);
 
   const handleSaveChanges = () => {
     toast({
@@ -28,10 +34,33 @@ const Settings = () => {
     });
   };
 
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setProfileImage(null);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground pb-20">
+      {/* Back Button */}
+      <button 
+        onClick={() => navigate('/')} 
+        className="absolute top-4 left-4 p-2 text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="h-6 w-6" />
+      </button>
+
       {/* Header */}
-      <div className="bg-black p-4 flex items-center gap-2 sticky top-0 z-50">
+      <div className="bg-black p-4 flex items-center justify-center gap-2 sticky top-0 z-50">
         <SettingsIcon className="h-5 w-5" />
         <h1 className="text-xl font-bold">Settings</h1>
       </div>
@@ -47,9 +76,46 @@ const Settings = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-center mb-6">
-              <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center">
-                <User className="h-12 w-12 text-muted-foreground" />
-              </div>
+              <Dialog>
+                <DialogTrigger>
+                  <div className="relative group">
+                    <Avatar className="w-24 h-24 cursor-pointer">
+                      <AvatarImage src={profileImage || undefined} />
+                      <AvatarFallback>
+                        <User className="h-12 w-12" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="absolute inset-0 bg-black bg-opacity-40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                      <Camera className="h-8 w-8 text-white" />
+                    </div>
+                  </div>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Update Profile Picture</DialogTitle>
+                    <DialogDescription>
+                      Choose a new profile picture or remove the current one
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                    />
+                    {profileImage && (
+                      <Button
+                        variant="destructive"
+                        onClick={handleRemoveImage}
+                        className="w-full"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Remove Picture
+                      </Button>
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
             <div className="space-y-4">
               <div>
@@ -131,76 +197,27 @@ const Settings = () => {
 
             <div className="space-y-2">
               <Label>Training Days</Label>
-              <ToggleGroup type="multiple" value={trainingDays} onValueChange={setTrainingDays}>
+              <div className="grid grid-cols-7 gap-1">
                 {["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"].map((day) => (
-                  <ToggleGroupItem key={day} value={day} aria-label={day}>
+                  <button
+                    key={day}
+                    onClick={() => {
+                      setTrainingDays(prev =>
+                        prev.includes(day)
+                          ? prev.filter(d => d !== day)
+                          : [...prev, day]
+                      );
+                    }}
+                    className={`p-2 text-xs font-medium rounded-lg transition-colors ${
+                      trainingDays.includes(day)
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    }`}
+                  >
                     {day}
-                  </ToggleGroupItem>
+                  </button>
                 ))}
-              </ToggleGroup>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Notifications */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5" />
-              Notifications
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label>Training Reminders</Label>
-                <Switch checked={notifications} onCheckedChange={setNotifications} />
               </div>
-              <div className="flex items-center justify-between">
-                <Label>Progress Updates</Label>
-                <Switch checked={notifications} onCheckedChange={setNotifications} />
-              </div>
-              <div className="flex items-center justify-between">
-                <Label>AI Coach Insights</Label>
-                <Switch checked={notifications} onCheckedChange={setNotifications} />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* App Personalization */}
-        <Card>
-          <CardHeader>
-            <CardTitle>App Personalization</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {darkMode ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-                <Label>Dark Mode</Label>
-              </div>
-              <Switch checked={darkMode} onCheckedChange={setDarkMode} />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Units</Label>
-              <RadioGroup value={units} onValueChange={setUnits}>
-                <div className="flex gap-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="kg" id="kg" />
-                    <Label htmlFor="kg">Kg/Km</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="lb" id="lb" />
-                    <Label htmlFor="lb">Lb/Mi</Label>
-                  </div>
-                </div>
-              </RadioGroup>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Label>Haptic Feedback</Label>
-              <Switch checked={haptics} onCheckedChange={setHaptics} />
             </div>
           </CardContent>
         </Card>
@@ -214,26 +231,28 @@ const Settings = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Body Weight</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  placeholder="Enter weight"
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                />
+                <span className="flex items-center">{units}</span>
+              </div>
+            </div>
             <Button variant="outline" className="w-full">Export Training Data</Button>
             <Button variant="outline" className="w-full">Update Personal Records</Button>
             <Button variant="outline" className="w-full">Modify Monthly Goals</Button>
           </CardContent>
         </Card>
 
-        {/* Support */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <HelpCircle className="h-5 w-5" />
-              Support
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button variant="outline" className="w-full">FAQ & Help Center</Button>
-            <Button variant="outline" className="w-full">Report a Problem</Button>
-            <Button variant="outline" className="w-full">Suggest a Feature</Button>
-          </CardContent>
-        </Card>
+        {/* Save Changes Button */}
+        <Button className="w-full" onClick={handleSaveChanges}>
+          Save Changes
+        </Button>
 
         {/* Account Management */}
         <Card>
@@ -248,11 +267,6 @@ const Settings = () => {
             <Button variant="destructive" className="w-full">Delete Account</Button>
           </CardContent>
         </Card>
-
-        {/* Save Changes */}
-        <Button className="w-full" onClick={handleSaveChanges}>
-          Save Changes
-        </Button>
       </div>
     </div>
   );

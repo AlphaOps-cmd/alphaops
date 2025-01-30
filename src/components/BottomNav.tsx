@@ -23,7 +23,10 @@ const BottomNav = () => {
           <BarChart className="h-6 w-6" />
           <span>Progress</span>
         </button>
-        <button className="bottom-nav-item text-muted-foreground">
+        <button 
+          className={`bottom-nav-item ${location.pathname === '/settings' ? 'text-primary' : 'text-muted-foreground'}`}
+          onClick={() => navigate('/settings')}
+        >
           <Settings className="h-6 w-6" />
           <span>Settings</span>
         </button>
