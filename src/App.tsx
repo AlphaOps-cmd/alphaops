@@ -8,6 +8,7 @@ import Progress from "./pages/Progress";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import WorkoutComplete from "./pages/WorkoutComplete";
+import AICoach from "./pages/AICoach";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/progress" element={<Progress />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/workout-complete" element={<WorkoutComplete />} />
+          <Route path="/ai-coach" element={<AICoach />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
