@@ -57,8 +57,8 @@ const AICoach = () => {
     
     const newMessages: Message[] = [
       ...messages,
-      { role: "user", content: message },
-      { role: "ai", content: "Gracias por tu mensaje. Esta es una respuesta de ejemplo de la IA. En la implementación final, esto se conectará con un servicio de IA real." }
+      { role: "user" as const, content: message },
+      { role: "ai" as const, content: "Gracias por tu mensaje. Esta es una respuesta de ejemplo de la IA. En la implementación final, esto se conectará con un servicio de IA real." }
     ];
     
     setMessages(newMessages);
@@ -164,13 +164,13 @@ const AICoach = () => {
               ))}
             </ScrollArea>
             
-            {/* Quick Questions - Updated styling */}
+            {/* Quick Questions */}
             <div className="grid gap-2 mb-4">
               {quickQuestions.map((question, index) => (
                 <Button
                   key={index}
                   variant="outline"
-                  className="w-full justify-start text-sm h-auto py-3 px-4 bg-card hover:bg-card/80"
+                  className="w-full justify-start text-sm"
                   onClick={() => handleSendMessage(question)}
                 >
                   {question}
