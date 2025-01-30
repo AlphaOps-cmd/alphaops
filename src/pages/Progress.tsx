@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Heart, ArrowUp, ArrowDown, User, ChartBar, ChartLine, Dumbbell, Brain, Calendar } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -31,34 +32,30 @@ const mockData = {
   ]
 };
 
-const aiRecommendations = [
-  {
-    type: 'load',
-    icon: '🏋️‍♂️',
-    message: "Te recomendamos aumentar tu peso en Squat un 5% esta semana basándonos en tu progreso."
-  },
-  {
-    type: 'performance',
-    icon: '📈',
-    message: "Tus tiempos en los WODs han mejorado un 10% en las últimas 3 semanas, sigue así."
-  },
-  {
-    type: 'recovery',
-    icon: '🛌',
-    message: "Tu frecuencia de entrenamientos es muy alta, te sugerimos tomar un día de descanso activo."
-  },
-  {
-    type: 'nutrition',
-    icon: '🍗',
-    message: "Basado en tu peso y entrenamientos, podrías beneficiarte de un aumento de 200 kcal diarias."
-  }
-];
-
 const Progress = () => {
+  const navigate = useNavigate();
+
+  const handleWorkoutClick = (workout: any) => {
+    navigate('/workout-complete', { 
+      state: { 
+        workoutStats: {
+          totalTime: 45 * 60, // Convert to seconds
+          type: workout.type.toLowerCase(),
+          exercises: [
+            { name: "Run", reps: "1000m" },
+            { name: "Push-ups", reps: "20" },
+            { name: "Squats", reps: "30" }
+          ],
+          rounds: workout.type === "EMOM" ? 12 : undefined
+        }
+      }
+    });
+  };
+
   return (
     <div className="min-h-screen pb-20 p-4 space-y-6">
-      {/* User Profile Header */}
-      <div className="flex items-center justify-between mb-6 bg-card rounded-lg p-4">
+      {/* User Profile Header - Now with black background */}
+      <div className="flex items-center justify-between mb-6 bg-black p-4 -mx-4 -mt-4">
         <div className="flex items-center gap-2">
           <User className="h-8 w-8 text-primary" />
           <div>
@@ -66,10 +63,10 @@ const Progress = () => {
             <p className="text-sm text-muted-foreground">Premium Member</p>
           </div>
         </div>
-        <div className="text-right">
+        <Card className="w-24 h-24 rounded-full flex flex-col items-center justify-center bg-card">
           <p className="text-lg font-semibold">80%</p>
-          <p className="text-sm text-muted-foreground">Monthly Consistency</p>
-        </div>
+          <p className="text-xs text-muted-foreground text-center">Monthly Consistency</p>
+        </Card>
       </div>
 
       {/* Quick Progress Summary */}
@@ -114,28 +111,6 @@ const Progress = () => {
         </CardContent>
       </Card>
 
-      {/* AlphaOps AI Coach */}
-      <Card className="bg-black text-white">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-white">
-            <Brain className="h-5 w-5" />
-            AlphaOps Coach
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {aiRecommendations.map((rec, index) => (
-            <div key={index} className="p-3 bg-zinc-900 rounded-lg border border-zinc-800">
-              <div className="flex items-start gap-3">
-                <span className="text-xl">{rec.icon}</span>
-                <p className="text-sm text-zinc-200">
-                  {rec.message}
-                </p>
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
       {/* Physical Progress */}
       <Card>
         <CardHeader>
@@ -174,7 +149,44 @@ const Progress = () => {
         </CardContent>
       </Card>
 
-      {/* Workout History */}
+      {/* AlphaOps AI Coach - Moved after Physical Progress */}
+      <Card className="bg-black text-white">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-white">
+            <Brain className="h-5 w-5" />
+            AlphaOps AI Coach
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Hyrox-focused recommendations */}
+          <div className="p-3 bg-zinc-900 rounded-lg border border-zinc-800">
+            <div className="flex items-start gap-3">
+              <span className="text-xl">🏃</span>
+              <p className="text-sm text-zinc-200">
+                "Tu ritmo en los sprints de Hyrox ha mejorado un 8%. Intenta mantener este ritmo en distancias más largas."
+              </p>
+            </div>
+          </div>
+          <div className="p-3 bg-zinc-900 rounded-lg border border-zinc-800">
+            <div className="flex items-start gap-3">
+              <span className="text-xl">💪</span>
+              <p className="text-sm text-zinc-200">
+                "Para mejorar tu rendimiento en Wall Balls, enfócate en explosividad y resistencia muscular."
+              </p>
+            </div>
+          </div>
+          <div className="p-3 bg-zinc-900 rounded-lg border border-zinc-800">
+            <div className="flex items-start gap-3">
+              <span className="text-xl">🎯</span>
+              <p className="text-sm text-zinc-200">
+                "Tu próxima competición Hyrox es en 6 semanas. Aumenta gradualmente la intensidad de tus entrenamientos."
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Workout History - Now clickable */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -184,7 +196,11 @@ const Progress = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {mockData.recentWorkouts.map((workout, index) => (
-            <div key={index} className="flex items-center justify-between p-3 bg-card/50 rounded-lg">
+            <div 
+              key={index} 
+              className="flex items-center justify-between p-3 bg-card/50 rounded-lg cursor-pointer hover:bg-card/70 transition-colors"
+              onClick={() => handleWorkoutClick(workout)}
+            >
               <div>
                 <p className="font-medium">{workout.type}</p>
                 <p className="text-sm text-muted-foreground">{workout.date}</p>
