@@ -42,7 +42,6 @@ const Settings = () => {
         <AppPersonalizationSection />
         <SupportFeedbackSection />
         
-        {/* Save Changes Button */}
         <Button className="w-full" onClick={handleSaveChanges}>
           Save Changes
         </Button>
