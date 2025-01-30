@@ -9,6 +9,9 @@ import { useToast } from "@/hooks/use-toast";
 export const DataManagementSection = ({ units }: { units: string }) => {
   const { toast } = useToast();
   const [bodyWeight, setBodyWeight] = useState("");
+  const [benchPress, setBenchPress] = useState("");
+  const [squat, setSquat] = useState("");
+  const [deadlift, setDeadlift] = useState("");
 
   const handleBodyWeightUpdate = () => {
     if (bodyWeight) {
@@ -17,6 +20,13 @@ export const DataManagementSection = ({ units }: { units: string }) => {
         description: `Your weight has been updated to ${bodyWeight}${units}`,
       });
     }
+  };
+
+  const handlePersonalRecordUpdate = (exercise: string, value: string) => {
+    toast({
+      title: "Personal record updated",
+      description: `Your ${exercise} PR has been updated to ${value}${units}`,
+    });
   };
 
   return (
@@ -40,6 +50,46 @@ export const DataManagementSection = ({ units }: { units: string }) => {
             <Button onClick={handleBodyWeightUpdate}>Update</Button>
           </div>
         </div>
+
+        <div className="space-y-4">
+          <Label>Personal Records</Label>
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                placeholder={`Bench Press (${units})`}
+                value={benchPress}
+                onChange={(e) => setBenchPress(e.target.value)}
+              />
+              <Button onClick={() => handlePersonalRecordUpdate("Bench Press", benchPress)}>
+                Update
+              </Button>
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                placeholder={`Squat (${units})`}
+                value={squat}
+                onChange={(e) => setSquat(e.target.value)}
+              />
+              <Button onClick={() => handlePersonalRecordUpdate("Squat", squat)}>
+                Update
+              </Button>
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                placeholder={`Deadlift (${units})`}
+                value={deadlift}
+                onChange={(e) => setDeadlift(e.target.value)}
+              />
+              <Button onClick={() => handlePersonalRecordUpdate("Deadlift", deadlift)}>
+                Update
+              </Button>
+            </div>
+          </div>
+        </div>
+
         <div className="space-y-2">
           <Label>Export Data</Label>
           <Button 
@@ -53,21 +103,6 @@ export const DataManagementSection = ({ units }: { units: string }) => {
             }}
           >
             Export Training History
-          </Button>
-        </div>
-        <div className="space-y-2">
-          <Label>Backup Settings</Label>
-          <Button 
-            variant="outline" 
-            className="w-full"
-            onClick={() => {
-              toast({
-                title: "Backup created",
-                description: "Your settings have been backed up successfully.",
-              });
-            }}
-          >
-            Create Backup
           </Button>
         </div>
       </CardContent>
