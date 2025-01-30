@@ -7,7 +7,6 @@ import QuickQuestions from "@/components/ai-coach/QuickQuestions";
 import ChatInput from "@/components/ai-coach/ChatInput";
 import AIRecommendations from "@/components/ai-coach/AIRecommendations";
 import PremiumFeatureModal from "@/components/PremiumFeatureModal";
-import { useNavigate } from "react-router-dom";
 
 const mockRecommendations = [
   {
@@ -50,7 +49,6 @@ interface Message {
 }
 
 const AICoach = () => {
-  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "ai",
@@ -67,15 +65,17 @@ const AICoach = () => {
   const [currentRecommendation, setCurrentRecommendation] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
-
-  // Simulating user type check - replace with your actual user type check
-  const userType = "standard"; // This should come from your auth system
+  const [membership, setMembership] = useState('standard');
 
   useEffect(() => {
-    if (userType === "standard") {
+    const storedMembership = localStorage.getItem('membership');
+    if (storedMembership) {
+      setMembership(storedMembership);
+    }
+    if (storedMembership === 'standard') {
       setShowPremiumModal(true);
     }
-  }, [userType]);
+  }, []);
 
   const handlePremiumModalClose = () => {
     setShowPremiumModal(false);
@@ -120,7 +120,7 @@ const AICoach = () => {
 
   return (
     <>
-      {userType === "standard" && showPremiumModal ? (
+      {membership === 'standard' && showPremiumModal ? (
         <PremiumFeatureModal isOpen={showPremiumModal} onClose={handlePremiumModalClose} />
       ) : (
         <div className="min-h-screen pb-20 bg-background">
