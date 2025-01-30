@@ -164,13 +164,13 @@ const AICoach = () => {
               ))}
             </ScrollArea>
             
-            {/* Quick Questions */}
-            <div className="grid gap-2 mb-4">
+            {/* Quick Questions - Updated with proper width constraints */}
+            <div className="grid gap-2 mb-4 w-full">
               {quickQuestions.map((question, index) => (
                 <Button
                   key={index}
                   variant="outline"
-                  className="w-full justify-start text-sm"
+                  className="w-full justify-start text-sm text-left whitespace-normal h-auto py-2"
                   onClick={() => handleSendMessage(question)}
                 >
                   {question}
