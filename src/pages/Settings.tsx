@@ -119,6 +119,21 @@ const Settings = () => {
     });
   };
 
+  const handleFeedbackSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const type = formData.get('type');
+    const description = formData.get('description');
+
+    toast({
+      title: "Feedback Submitted",
+      description: "Thank you for your feedback. We'll review it shortly.",
+    });
+
+    // Reset form
+    (event.target as HTMLFormElement).reset();
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground pb-20">
       {/* Back Button */}
