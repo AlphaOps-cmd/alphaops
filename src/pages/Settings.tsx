@@ -1,4 +1,4 @@
-import { Bell, Database, HelpCircle, LogOut, Moon, Settings as SettingsIcon, Sun, User, ArrowLeft, Camera, Trash2 } from "lucide-react";
+import { Bell, Database, HelpCircle, LogOut, Moon, Settings as SettingsIcon, Sun, User, ArrowLeft, Camera, Trash2, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { Textarea } from "@/components/ui/textarea";
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(6, "Password must be at least 6 characters"),
@@ -28,23 +29,18 @@ const passwordSchema = z.object({
 const Settings = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [notifications, setNotifications] = useState({
+    trainingReminders: true,
+    monthlyProgress: true,
+    aiCoachInsights: true,
+    promotionalOffers: false
+  });
   const [darkMode, setDarkMode] = useState(true);
-  const [selectedWorkoutType, setSelectedWorkoutType] = useState("crossfit");
-  const [difficulty, setDifficulty] = useState("intermediate");
-  const [duration, setDuration] = useState("medium");
-  const [units, setUnits] = useState("kg");
-  const [notifications, setNotifications] = useState(true);
+  const [language, setLanguage] = useState("es");
+  const [monthlyGoal, setMonthlyGoal] = useState("15");
   const [haptics, setHaptics] = useState(true);
-  const [trainingDays, setTrainingDays] = useState<string[]>(["MON", "TUE", "THU", "FRI"]);
-  const [weight, setWeight] = useState("");
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [units, setUnits] = useState("kg");
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
-  const [bodyWeight, setBodyWeight] = useState("");
-  const [squatRM, setSquatRM] = useState("");
-  const [deadliftRM, setDeadliftRM] = useState("");
-  const [benchRM, setBenchRM] = useState("");
-  const [cleanRM, setCleanRM] = useState("");
-  const [snatchRM, setSnatchRM] = useState("");
 
   const form = useForm<z.infer<typeof passwordSchema>>({
     resolver: zodResolver(passwordSchema),
@@ -56,7 +52,6 @@ const Settings = () => {
   });
 
   const handlePasswordChange = (values: z.infer<typeof passwordSchema>) => {
-    // Here you would typically make an API call to change the password
     console.log("Password change values:", values);
     toast({
       title: "Password updated",
@@ -66,33 +61,11 @@ const Settings = () => {
     form.reset();
   };
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleRemoveImage = () => {
-    setProfileImage(null);
-  };
-
-  const handleSaveChanges = () => {
+  const handleFeedbackSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     toast({
-      title: "Settings saved",
-      description: "Your preferences have been updated successfully.",
-    });
-  };
-
-  const updateMetric = (value: string, setter: (value: string) => void, metricName: string) => {
-    setter(value);
-    toast({
-      title: `${metricName} updated`,
-      description: `Your ${metricName.toLowerCase()} has been updated to ${value} ${units}.`,
+      title: "Feedback sent",
+      description: "Thank you for your feedback! We'll review it shortly.",
     });
   };
 
@@ -127,7 +100,7 @@ const Settings = () => {
                 <DialogTrigger>
                   <div className="relative group">
                     <Avatar className="w-24 h-24 cursor-pointer">
-                      <AvatarImage src={profileImage || undefined} />
+                      <AvatarImage src={undefined} />
                       <AvatarFallback>
                         <User className="h-12 w-12" />
                       </AvatarFallback>
@@ -148,18 +121,7 @@ const Settings = () => {
                     <Input
                       type="file"
                       accept="image/*"
-                      onChange={handleImageUpload}
                     />
-                    {profileImage && (
-                      <Button
-                        variant="destructive"
-                        onClick={handleRemoveImage}
-                        className="w-full"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Remove Picture
-                      </Button>
-                    )}
                   </div>
                 </DialogContent>
               </Dialog>
@@ -242,178 +204,199 @@ const Settings = () => {
           </CardContent>
         </Card>
 
-        {/* Training Preferences */}
+        {/* Notifications */}
         <Card>
           <CardHeader>
-            <CardTitle>Training Preferences</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Bell className="h-5 w-5" />
+              Notifications
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Training Reminders</Label>
+                <p className="text-sm text-muted-foreground">
+                  Daily/weekly notifications based on your habits
+                </p>
+              </div>
+              <Switch
+                checked={notifications.trainingReminders}
+                onCheckedChange={(checked) => 
+                  setNotifications(prev => ({ ...prev, trainingReminders: checked }))}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Monthly Progress</Label>
+                <p className="text-sm text-muted-foreground">
+                  Get notified at 50% and 100% of your monthly goal
+                </p>
+              </div>
+              <Switch
+                checked={notifications.monthlyProgress}
+                onCheckedChange={(checked) => 
+                  setNotifications(prev => ({ ...prev, monthlyProgress: checked }))}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>AI Coach Insights</Label>
+                <p className="text-sm text-muted-foreground">
+                  Personalized suggestions based on your performance
+                </p>
+              </div>
+              <Switch
+                checked={notifications.aiCoachInsights}
+                onCheckedChange={(checked) => 
+                  setNotifications(prev => ({ ...prev, aiCoachInsights: checked }))}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Promotional Offers</Label>
+                <p className="text-sm text-muted-foreground">
+                  Special offers and promotions
+                </p>
+              </div>
+              <Switch
+                checked={notifications.promotionalOffers}
+                onCheckedChange={(checked) => 
+                  setNotifications(prev => ({ ...prev, promotionalOffers: checked }))}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* App Personalization */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <SettingsIcon className="h-5 w-5" />
+              App Personalization
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Dark Mode</Label>
+                <p className="text-sm text-muted-foreground">
+                  Toggle between dark and light mode
+                </p>
+              </div>
+              <Switch
+                checked={darkMode}
+                onCheckedChange={setDarkMode}
+              />
+            </div>
             <div className="space-y-2">
-              <Label>Preferred Workout Type</Label>
-              <Select value={selectedWorkoutType} onValueChange={setSelectedWorkoutType}>
+              <Label>Units of Measurement</Label>
+              <Select value={units} onValueChange={setUnits}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="crossfit">CrossFit</SelectItem>
-                  <SelectItem value="special-forces">Special Forces</SelectItem>
-                  <SelectItem value="hyrox">Hyrox</SelectItem>
-                  <SelectItem value="home">Home Workout</SelectItem>
+                  <SelectItem value="kg">Kilograms (kg)</SelectItem>
+                  <SelectItem value="lb">Pounds (lb)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="space-y-2">
-              <Label>Difficulty Level</Label>
-              <RadioGroup value={difficulty} onValueChange={setDifficulty}>
-                <div className="flex gap-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="beginner" id="beginner" />
-                    <Label htmlFor="beginner">Beginner</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="intermediate" id="intermediate" />
-                    <Label htmlFor="intermediate">Intermediate</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="advanced" id="advanced" />
-                    <Label htmlFor="advanced">Advanced</Label>
-                  </div>
-                </div>
-              </RadioGroup>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Workout Duration</Label>
-              <RadioGroup value={duration} onValueChange={setDuration}>
-                <div className="flex gap-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="short" id="short" />
-                    <Label htmlFor="short">Short (-20min)</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="medium" id="medium" />
-                    <Label htmlFor="medium">Medium (20-40min)</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="long" id="long" />
-                    <Label htmlFor="long">Long (+40min)</Label>
-                  </div>
-                </div>
-              </RadioGroup>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Training Days</Label>
-              <div className="grid grid-cols-7 gap-1">
-                {["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"].map((day) => (
-                  <button
-                    key={day}
-                    onClick={() => {
-                      setTrainingDays(prev =>
-                        prev.includes(day)
-                          ? prev.filter(d => d !== day)
-                          : [...prev, day]
-                      );
-                    }}
-                    className={`p-2 text-xs font-medium rounded-lg transition-colors ${
-                      trainingDays.includes(day)
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                    }`}
-                  >
-                    {day}
-                  </button>
-                ))}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Haptic Feedback</Label>
+                <p className="text-sm text-muted-foreground">
+                  Vibration for repetitions and timer alerts
+                </p>
               </div>
+              <Switch
+                checked={haptics}
+                onCheckedChange={setHaptics}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Language</Label>
+              <Select value={language} onValueChange={setLanguage}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="es">Español</SelectItem>
+                  <SelectItem value="en">English</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
 
-        {/* Data Management */}
+        {/* Monthly Goals */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5" />
-              Data Management
+              <HelpCircle className="h-5 w-5" />
+              Monthly Training Goals
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Body Weight ({units})</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  placeholder="Enter weight"
-                  value={bodyWeight}
-                  onChange={(e) => updateMetric(e.target.value, setBodyWeight, "Body Weight")}
+              <Label>Monthly Workouts Goal</Label>
+              <Input
+                type="number"
+                value={monthlyGoal}
+                onChange={(e) => setMonthlyGoal(e.target.value)}
+                min="1"
+                max="31"
+                placeholder="Enter number of workouts"
+              />
+              <p className="text-sm text-muted-foreground">
+                Set your target number of workouts for this month
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Support and Feedback */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Support & Feedback
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleFeedbackSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Type</Label>
+                <Select defaultValue="bug">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="bug">Report a Bug</SelectItem>
+                    <SelectItem value="feature">Suggest a Feature</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Description</Label>
+                <Textarea
+                  placeholder="Describe the issue or suggestion..."
+                  className="min-h-[100px]"
                 />
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Back Squat 1RM ({units})</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  placeholder="Enter weight"
-                  value={squatRM}
-                  onChange={(e) => updateMetric(e.target.value, setSquatRM, "Back Squat 1RM")}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Deadlift 1RM ({units})</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  placeholder="Enter weight"
-                  value={deadliftRM}
-                  onChange={(e) => updateMetric(e.target.value, setDeadliftRM, "Deadlift 1RM")}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Bench Press 1RM ({units})</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  placeholder="Enter weight"
-                  value={benchRM}
-                  onChange={(e) => updateMetric(e.target.value, setBenchRM, "Bench Press 1RM")}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Clean 1RM ({units})</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  placeholder="Enter weight"
-                  value={cleanRM}
-                  onChange={(e) => updateMetric(e.target.value, setCleanRM, "Clean 1RM")}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Snatch 1RM ({units})</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  placeholder="Enter weight"
-                  value={snatchRM}
-                  onChange={(e) => updateMetric(e.target.value, setSnatchRM, "Snatch 1RM")}
-                />
-              </div>
-            </div>
-            <Button variant="outline" className="w-full">Export Training Data</Button>
+              <Button type="submit" className="w-full">
+                Send Feedback
+              </Button>
+            </form>
           </CardContent>
         </Card>
 
         {/* Save Changes Button */}
-        <Button className="w-full" onClick={handleSaveChanges}>
+        <Button className="w-full" onClick={() => {}}>
           Save Changes
         </Button>
 
+        {/* Account Management */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
