@@ -56,7 +56,7 @@ const quickQuestions = [
 ];
 
 interface Message {
-  role: 'user' | 'ai';
+  role: "user" | "ai";
   content: string;
 }
 
@@ -69,10 +69,10 @@ const AICoach = () => {
   const handleSendMessage = () => {
     if (!inputMessage.trim()) return;
     
-    const newMessages = [
+    const newMessages: Message[] = [
       ...messages,
-      { role: 'user', content: inputMessage },
-      { role: 'ai', content: "Gracias por tu mensaje. Esta es una respuesta de ejemplo de la IA. En la implementación final, esto se conectará con un servicio de IA real." }
+      { role: "user" as const, content: inputMessage },
+      { role: "ai" as const, content: "Gracias por tu mensaje. Esta es una respuesta de ejemplo de la IA. En la implementación final, esto se conectará con un servicio de IA real." }
     ];
     
     setMessages(newMessages);
