@@ -8,18 +8,20 @@ import { useToast } from "@/hooks/use-toast";
 
 export const AppPersonalizationSection = () => {
   const { toast } = useToast();
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(() => {
+    return document.documentElement.classList.contains('dark');
+  });
   const [language, setLanguage] = useState("es");
   const [haptics, setHaptics] = useState(true);
   const [units, setUnits] = useState("kg");
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
+    localStorage.setItem('theme', darkMode ? 'dark' : 'light');
   }, [darkMode]);
 
   const handleDarkModeToggle = (checked: boolean) => {
     setDarkMode(checked);
-    document.documentElement.classList.toggle('dark', checked);
     toast({
       title: checked ? "Dark mode enabled" : "Light mode enabled",
       description: "Your preference has been saved.",
@@ -28,6 +30,7 @@ export const AppPersonalizationSection = () => {
 
   const handleLanguageChange = (value: string) => {
     setLanguage(value);
+    localStorage.setItem('language', value);
     toast({
       title: "Language updated",
       description: `App language changed to ${value === 'es' ? 'Spanish' : 'English'}`,
@@ -36,6 +39,7 @@ export const AppPersonalizationSection = () => {
 
   const handleUnitsChange = (value: string) => {
     setUnits(value);
+    localStorage.setItem('units', value);
     toast({
       title: "Units updated",
       description: `Measurement units changed to ${value.toUpperCase()}`,
@@ -44,6 +48,7 @@ export const AppPersonalizationSection = () => {
 
   const handleHapticsChange = (checked: boolean) => {
     setHaptics(checked);
+    localStorage.setItem('haptics', String(checked));
     toast({
       title: checked ? "Haptics enabled" : "Haptics disabled",
       description: "Your haptic feedback preference has been saved.",

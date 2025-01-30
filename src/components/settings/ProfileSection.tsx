@@ -5,8 +5,18 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 
 export const ProfileSection = () => {
+  const { toast } = useToast();
+
+  const handleChangePassword = () => {
+    toast({
+      title: "Change password",
+      description: "Password change functionality will be implemented soon.",
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -57,6 +67,13 @@ export const ProfileSection = () => {
             <Label>Membership</Label>
             <Input value="Premium" disabled />
           </div>
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={handleChangePassword}
+          >
+            Change Password
+          </Button>
         </div>
       </CardContent>
     </Card>

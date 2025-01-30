@@ -16,9 +16,9 @@ import {
 export const TrainingPreferencesSection = () => {
   const { toast } = useToast();
   const [monthlyGoal, setMonthlyGoal] = useState("15");
-  const [trainingStyle, setTrainingStyle] = useState("strength");
+  const [workoutType, setWorkoutType] = useState("CrossFit");
   const [difficulty, setDifficulty] = useState("intermediate");
-  const [workoutDuration, setWorkoutDuration] = useState("60");
+  const [workoutDuration, setWorkoutDuration] = useState("45");
   const [trainingDays, setTrainingDays] = useState({
     monday: true,
     tuesday: true,
@@ -75,26 +75,25 @@ export const TrainingPreferencesSection = () => {
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>Training Style</Label>
+            <Label>Workout Type</Label>
             <Select
-              value={trainingStyle}
+              value={workoutType}
               onValueChange={(value) => {
-                setTrainingStyle(value);
+                setWorkoutType(value);
                 toast({
-                  title: "Training style updated",
-                  description: `Your training style has been set to ${value}`,
+                  title: "Workout type updated",
+                  description: `Your workout type has been set to ${value}`,
                 });
               }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select training style" />
+                <SelectValue placeholder="Select workout type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="strength">Strength Training</SelectItem>
-                <SelectItem value="hypertrophy">Hypertrophy</SelectItem>
-                <SelectItem value="endurance">Endurance</SelectItem>
-                <SelectItem value="powerlifting">Powerlifting</SelectItem>
-                <SelectItem value="crossfit">CrossFit</SelectItem>
+                <SelectItem value="CrossFit">CrossFit</SelectItem>
+                <SelectItem value="Special Forces">Special Forces</SelectItem>
+                <SelectItem value="Hyrox">Hyrox</SelectItem>
+                <SelectItem value="Home Workout">Home Workout</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -118,13 +117,12 @@ export const TrainingPreferencesSection = () => {
                 <SelectItem value="beginner">Beginner</SelectItem>
                 <SelectItem value="intermediate">Intermediate</SelectItem>
                 <SelectItem value="advanced">Advanced</SelectItem>
-                <SelectItem value="expert">Expert</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label>Workout Duration (minutes)</Label>
+            <Label>Workout Duration</Label>
             <Select
               value={workoutDuration}
               onValueChange={(value) => {
@@ -142,8 +140,6 @@ export const TrainingPreferencesSection = () => {
                 <SelectItem value="30">30 minutes</SelectItem>
                 <SelectItem value="45">45 minutes</SelectItem>
                 <SelectItem value="60">60 minutes</SelectItem>
-                <SelectItem value="90">90 minutes</SelectItem>
-                <SelectItem value="120">120 minutes</SelectItem>
               </SelectContent>
             </Select>
           </div>
