@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Brain } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +6,8 @@ import ChatMessages from "@/components/ai-coach/ChatMessages";
 import QuickQuestions from "@/components/ai-coach/QuickQuestions";
 import ChatInput from "@/components/ai-coach/ChatInput";
 import AIRecommendations from "@/components/ai-coach/AIRecommendations";
+import PremiumFeatureModal from "@/components/PremiumFeatureModal";
+import { useNavigate } from "react-router-dom";
 
 const mockRecommendations = [
   {
@@ -48,10 +50,37 @@ interface Message {
 }
 
 const AICoach = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const navigate = useNavigate();
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: "ai",
+      content: "¡Hola! Soy tu entrenador personal de AlphaOps AI. Puedo ayudarte con:\n\n" +
+        "• Recomendaciones personalizadas de entrenamiento\n" +
+        "• Correcciones de técnica en tiempo real\n" +
+        "• Planes de nutrición adaptados a tus objetivos\n" +
+        "• Seguimiento de tu progreso\n" +
+        "• Consejos de recuperación\n\n" +
+        "¿En qué puedo ayudarte hoy?"
+    }
+  ]);
   const [inputMessage, setInputMessage] = useState("");
   const [currentRecommendation, setCurrentRecommendation] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
+
+  // Simulating user type check - replace with your actual user type check
+  const userType = "standard"; // This should come from your auth system
+
+  useEffect(() => {
+    if (userType === "standard") {
+      setShowPremiumModal(true);
+    }
+  }, [userType]);
+
+  const handlePremiumModalClose = () => {
+    setShowPremiumModal(false);
+    navigate("/"); // Navigate back to home when modal is closed
+  };
 
   const handleSendMessage = (message: string = inputMessage) => {
     if (!message.trim()) return;
@@ -89,6 +118,10 @@ const AICoach = () => {
       prev === 0 ? quickQuestions.length - 1 : prev - 1
     );
   };
+
+  if (userType === "standard") {
+    return <PremiumFeatureModal isOpen={showPremiumModal} onClose={handlePremiumModalClose} />;
+  }
 
   return (
     <div className="min-h-screen pb-20 bg-background">
