@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Brain, Mic, ThumbsUp, ThumbsDown, MessageSquare, ArrowLeft, ArrowRight } from "lucide-react";
+import { Brain } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
-import PremiumFeatureModal from "@/components/PremiumFeatureModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import ChatMessages from "@/components/ai-coach/ChatMessages";
+import QuickQuestions from "@/components/ai-coach/QuickQuestions";
+import ChatInput from "@/components/ai-coach/ChatInput";
+import AIRecommendations from "@/components/ai-coach/AIRecommendations";
 
 const mockRecommendations = [
   {
@@ -48,20 +48,18 @@ interface Message {
 }
 
 const AICoach = () => {
-  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [currentRecommendation, setCurrentRecommendation] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const isPremiumUser = true;
 
   const handleSendMessage = (message: string = inputMessage) => {
     if (!message.trim()) return;
     
     const newMessages: Message[] = [
       ...messages,
-      { role: "user" as const, content: message },
-      { role: "ai" as const, content: "Gracias por tu mensaje. Esta es una respuesta de ejemplo de la IA. En la implementación final, esto se conectará con un servicio de IA real." }
+      { role: "user", content: message },
+      { role: "ai", content: "Gracias por tu mensaje. Esta es una respuesta de ejemplo de la IA. En la implementación final, esto se conectará con un servicio de IA real." }
     ];
     
     setMessages(newMessages);
@@ -92,15 +90,6 @@ const AICoach = () => {
     );
   };
 
-  if (!isPremiumUser) {
-    return (
-      <PremiumFeatureModal
-        isOpen={showPremiumModal}
-        onClose={() => setShowPremiumModal(false)}
-      />
-    );
-  }
-
   return (
     <div className="min-h-screen pb-20 bg-background">
       <div className="p-4 border-b">
@@ -111,120 +100,34 @@ const AICoach = () => {
       </div>
 
       <div className="container mx-auto p-4 space-y-6 max-w-3xl">
-        {/* Recommendations Section */}
         <section>
           <h2 className="text-xl font-semibold mb-4">Recomendaciones Inteligentes</h2>
-          <div className="relative">
-            <Card className={`border ${mockRecommendations[currentRecommendation].color}`}>
-              <CardContent className="p-4">
-                <div className="flex items-start gap-4">
-                  <span className="text-2xl">{mockRecommendations[currentRecommendation].icon}</span>
-                  <div className="flex-1">
-                    <p className="text-sm">{mockRecommendations[currentRecommendation].message}</p>
-                    <div className="flex gap-2 mt-2">
-                      <Button variant="ghost" size="sm">
-                        <ThumbsUp className="h-4 w-4 mr-1" />
-                        Útil
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <ThumbsDown className="h-4 w-4 mr-1" />
-                        No útil
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <div className="absolute inset-y-0 left-0 flex items-center">
-              <Button variant="ghost" size="icon" onClick={handlePrevRecommendation}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="absolute inset-y-0 right-0 flex items-center">
-              <Button variant="ghost" size="icon" onClick={handleNextRecommendation}>
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+          <AIRecommendations
+            recommendation={mockRecommendations[currentRecommendation]}
+            onPrev={handlePrevRecommendation}
+            onNext={handleNextRecommendation}
+          />
         </section>
 
-        {/* Chat Section */}
         <Card className="h-[500px] flex flex-col">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
               Chat con AlphaOps AI
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 flex flex-col overflow-hidden">
-            <ScrollArea className="flex-1 mb-4 pr-4">
-              <div className="flex flex-col space-y-4">
-                {messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`${
-                      message.role === 'user' ? 'ml-auto' : 'mr-auto'
-                    }`}
-                  >
-                    <div
-                      className={`p-3 rounded-lg max-w-[80%] ${
-                        message.role === 'user'
-                          ? 'bg-primary text-primary-foreground ml-auto'
-                          : 'bg-muted'
-                      }`}
-                    >
-                      {message.content}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-            
-            {/* Quick Questions - Scrollable with fixed height */}
-            <div className="relative mb-4 h-12 flex-shrink-0">
-              <div className="flex items-center justify-between">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handlePrevQuestion}
-                  className="absolute left-0 z-10"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full mx-8 justify-start text-sm text-left truncate px-3"
-                  onClick={() => handleSendMessage(quickQuestions[currentQuestionIndex])}
-                >
-                  <span className="truncate block">
-                    {quickQuestions[currentQuestionIndex]}
-                  </span>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleNextQuestion}
-                  className="absolute right-0 z-10"
-                >
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Input Section - Fixed at bottom */}
-            <div className="flex gap-2 mt-auto flex-shrink-0">
-              <Button variant="outline" size="icon">
-                <Mic className="h-4 w-4" />
-              </Button>
-              <Input
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                placeholder="Escribe tu mensaje..."
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                className="flex-1"
-              />
-              <Button onClick={() => handleSendMessage()}>Enviar</Button>
-            </div>
+            <ChatMessages messages={messages} />
+            <QuickQuestions
+              currentQuestion={quickQuestions[currentQuestionIndex]}
+              onPrevQuestion={handlePrevQuestion}
+              onNextQuestion={handleNextQuestion}
+              onSelectQuestion={handleSendMessage}
+            />
+            <ChatInput
+              value={inputMessage}
+              onChange={setInputMessage}
+              onSend={() => handleSendMessage()}
+            />
           </CardContent>
         </Card>
       </div>
