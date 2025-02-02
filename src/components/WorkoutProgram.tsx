@@ -17,14 +17,19 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
 
   // Fetch workout from database and process with AI if needed
   const { data: workout, isLoading } = useQuery({
-    queryKey: ['workout', selectedDay],
+    queryKey: ['workout', selectedDay, workoutType, difficulty, duration],
     queryFn: async () => {
       const date = new Date();
       date.setDate(parseInt(selectedDay));
       const formattedDate = date.toISOString().split('T')[0];
 
       const response = await supabase.functions.invoke('process-workout', {
-        body: { date: formattedDate }
+        body: { 
+          date: formattedDate,
+          workoutType,
+          difficulty,
+          duration
+        }
       });
 
       if (response.error) throw response.error;

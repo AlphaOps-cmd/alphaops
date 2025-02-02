@@ -9,7 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      cached_workouts: {
+        Row: {
+          created_at: string | null
+          date: string
+          difficulty: Database["public"]["Enums"]["difficulty_level"]
+          duration: Database["public"]["Enums"]["workout_duration"]
+          id: string
+          workout_data: Json
+          workout_type: Database["public"]["Enums"]["workout_type"]
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          difficulty: Database["public"]["Enums"]["difficulty_level"]
+          duration: Database["public"]["Enums"]["workout_duration"]
+          id?: string
+          workout_data: Json
+          workout_type: Database["public"]["Enums"]["workout_type"]
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          duration?: Database["public"]["Enums"]["workout_duration"]
+          id?: string
+          workout_data?: Json
+          workout_type?: Database["public"]["Enums"]["workout_type"]
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +47,10 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      difficulty_level: "Beginner" | "Intermediate" | "Advanced"
+      workout_duration: "30 min" | "45 min" | "60 min"
       workout_section_type: "warmup" | "strength" | "wod" | "recovery"
+      workout_type: "CrossFit" | "Special Forces" | "Hyrox" | "Home Workout"
     }
     CompositeTypes: {
       [_ in never]: never

@@ -1,7 +1,12 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY')!;
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,15 +19,31 @@ serve(async (req) => {
   }
 
   try {
-    const { date } = await req.json();
-    console.log('Generating workout for date:', date);
+    const { date, workoutType, difficulty, duration } = await req.json();
+    console.log('Generating workout for:', { date, workoutType, difficulty, duration });
+
+    // Check cache first
+    const { data: cachedWorkout } = await supabase
+      .from('cached_workouts')
+      .select('workout_data')
+      .eq('date', date)
+      .eq('workout_type', workoutType)
+      .eq('difficulty', difficulty)
+      .eq('duration', duration)
+      .single();
+
+    if (cachedWorkout) {
+      console.log('Cache hit! Returning cached workout');
+      return new Response(JSON.stringify(cachedWorkout.workout_data), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Get day of week (0 = Sunday, 1 = Monday, etc.)
     const dayOfWeek = new Date(date).getDay();
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const currentDay = days[dayOfWeek];
 
-    // Define workout focus based on day
     const workoutFocus = {
       'Monday': 'Olympic lifting + short metabolic WOD',
       'Tuesday': 'Gymnastics and functional strength',
@@ -33,7 +54,31 @@ serve(async (req) => {
       'Sunday': 'Active recovery and mobility'
     };
 
+    const difficultyModifiers = {
+      'Beginner': 'Scale weights and movements to beginner level. Focus on form and technique. Use simpler variations of complex movements.',
+      'Intermediate': 'Use moderate weights and standard movement variations. Include some complex movements with modifications available.',
+      'Advanced': 'Use challenging weights and advanced movement variations. Include complex gymnastic movements and heavy lifting.'
+    };
+
+    const durationModifiers = {
+      '30 min': 'Keep workouts concise and intense. Reduce total volume but maintain intensity.',
+      '45 min': 'Balanced workout with moderate volume and intensity.',
+      '60 min': 'Include additional skill work and higher volume. Add complexity to movements.'
+    };
+
+    const workoutTypeModifiers = {
+      'CrossFit': 'Focus on varied functional movements performed at high intensity.',
+      'Special Forces': 'Emphasize endurance, strength, and mental toughness with military-style training.',
+      'Hyrox': 'Combine functional fitness with endurance racing elements.',
+      'Home Workout': 'Use minimal equipment and bodyweight movements.'
+    };
+
     const prompt = `Generate an AlphaOps-style workout for ${currentDay} focusing on ${workoutFocus[currentDay]}.
+
+Specific requirements:
+- Workout Type: ${workoutType} - ${workoutTypeModifiers[workoutType]}
+- Difficulty: ${difficulty} - ${difficultyModifiers[difficulty]}
+- Duration: ${duration} - ${durationModifiers[duration]}
 
 The workout should follow this exact JSON structure:
 {
@@ -116,6 +161,24 @@ Make sure to:
       const jsonContent = content.replace(/```json\n|\n```/g, '');
       workout = JSON.parse(jsonContent);
       console.log('Successfully parsed workout:', workout);
+
+      // Cache the workout
+      const { error: cacheError } = await supabase
+        .from('cached_workouts')
+        .insert({
+          date,
+          workout_type: workoutType,
+          difficulty,
+          duration,
+          workout_data: workout
+        });
+
+      if (cacheError) {
+        console.error('Error caching workout:', cacheError);
+      } else {
+        console.log('Successfully cached workout');
+      }
+
     } catch (error) {
       console.error('Error parsing OpenAI response:', error);
       console.log('Raw response content:', aiResponse.choices[0].message.content);
