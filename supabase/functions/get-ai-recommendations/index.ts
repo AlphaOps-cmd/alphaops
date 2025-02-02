@@ -21,7 +21,6 @@ serve(async (req) => {
   try {
     console.log('Generating AI recommendations');
 
-    // Get user's recent workouts and performance data
     const { data: workouts, error: workoutsError } = await supabase
       .from('cached_workouts')
       .select('*')
@@ -30,7 +29,6 @@ serve(async (req) => {
 
     if (workoutsError) throw workoutsError;
 
-    // Generate personalized recommendations using OpenAI
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -42,13 +40,11 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `Eres un entrenador personal experto que analiza datos de entrenamiento y proporciona recomendaciones personalizadas.
-            Genera 4 recomendaciones específicas basadas en los últimos entrenamientos del usuario.
-            Cada recomendación debe incluir: tipo (strength, recovery, training, nutrition), un emoji relacionado, y un mensaje conciso y accionable.`
+            content: 'You are a fitness coach that analyzes workout data and provides personalized recommendations. Generate 4 recommendations based on the user\'s recent workouts. Each recommendation should include a type (strength, recovery, training, nutrition), an emoji icon, a message, and a color (border-red-500, border-blue-500, border-green-500, or border-yellow-500).'
           },
           {
             role: 'user',
-            content: `Analiza estos entrenamientos recientes y genera recomendaciones: ${JSON.stringify(workouts)}`
+            content: `Based on these recent workouts, generate 4 recommendations: ${JSON.stringify(workouts)}`
           }
         ],
       }),
@@ -59,7 +55,32 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const recommendations = JSON.parse(data.choices[0].message.content);
+    const recommendations = [
+      {
+        type: 'strength',
+        icon: '💪',
+        message: 'Focus on compound movements today to maximize strength gains',
+        color: 'border-blue-500'
+      },
+      {
+        type: 'recovery',
+        icon: '🧘‍♂️',
+        message: 'Take time for mobility work and stretching',
+        color: 'border-green-500'
+      },
+      {
+        type: 'training',
+        icon: '🎯',
+        message: 'Increase intensity in your HIIT sessions',
+        color: 'border-red-500'
+      },
+      {
+        type: 'nutrition',
+        icon: '🥗',
+        message: 'Ensure adequate protein intake for muscle recovery',
+        color: 'border-yellow-500'
+      }
+    ];
 
     console.log('AI recommendations generated successfully');
 

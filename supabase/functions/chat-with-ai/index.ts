@@ -28,7 +28,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'Eres un entrenador personal experto que ayuda a los usuarios con sus preguntas sobre fitness, nutrición y bienestar. Proporciona respuestas concisas y prácticas.'
+            content: 'You are a knowledgeable fitness coach. Provide clear, concise responses without using markdown formatting. Format your responses in plain text with proper spacing and paragraphs.'
           },
           { role: 'user', content: message }
         ],

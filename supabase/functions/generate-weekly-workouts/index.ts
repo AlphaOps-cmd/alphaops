@@ -18,75 +18,49 @@ const difficulties = ['Beginner', 'Intermediate', 'Advanced'];
 const durations = ['30 min', '45 min', '60 min'];
 
 const generateWorkoutPrompt = (date: string, workoutType: string, difficulty: string, duration: string) => {
-  const workoutTypeGuides = {
-    'CrossFit': `Generate a CrossFit workout following these rules:
-    1. Alternate between AMRAP, EMOM, and FOR TIME formats throughout the week
-    2. Include Olympic lifting, gymnastics, and metabolic conditioning
-    3. Focus on compound movements and functional fitness
-    4. Scale appropriately for ${difficulty} level
-    5. Fit within ${duration} including warmup and cooldown`,
+  return `Generate a structured ${workoutType} workout for ${date} following these guidelines:
+    1. Include warmup, strength/skill work, main workout (WOD), and recovery
+    2. Scale appropriately for ${difficulty} level
+    3. Fit within ${duration} including warmup and cooldown
+    4. Make it unique and different from other workouts
+    5. Include specific exercises, sets, reps, and time domains
     
-    'Special Forces': `Generate a Special Forces style workout following these rules:
-    1. Focus on endurance, strength, and mental toughness
-    2. Include rucking, calisthenics, and military-style drills
-    3. Emphasize bodyweight exercises and cardio endurance
-    4. Scale appropriately for ${difficulty} level
-    5. Fit within ${duration} including warmup and cooldown`,
-    
-    'Hyrox': `Generate a Hyrox-specific workout following these rules:
-    1. Focus on the 8 Hyrox workout stations
-    2. Include sled push/pull, farmer's carries, and wall balls
-    3. Emphasize cardio endurance and functional strength
-    4. Scale appropriately for ${difficulty} level
-    5. Fit within ${duration} including warmup and cooldown`,
-    
-    'Home Workout': `Generate a home workout following these rules:
-    1. Use minimal equipment (bodyweight, resistance bands)
-    2. Include cardio and strength elements
-    3. Focus on functional movements
-    4. Scale appropriately for ${difficulty} level
-    5. Fit within ${duration} including warmup and cooldown`
-  };
-
-  return `Generate a structured ${workoutType} workout for ${date} following these specific guidelines:
-  ${workoutTypeGuides[workoutType]}
-  
-  Return in this exact JSON format:
-  {
-    "workout_sections": [
-      {
-        "section_type": "warmup",
-        "content": {
-          "exercises": [
-            {"name": "exercise name", "reps": "repetitions or duration"}
-          ]
+    Return in this exact JSON format:
+    {
+      "workout_sections": [
+        {
+          "section_type": "warmup",
+          "content": {
+            "exercises": [
+              {"name": "exercise name", "reps": "repetitions or duration"}
+            ]
+          }
+        },
+        {
+          "section_type": "strength",
+          "content": {
+            "exercises": [
+              {"name": "exercise name", "reps": "sets and reps scheme"}
+            ]
+          }
+        },
+        {
+          "section_type": "wod",
+          "content": {
+            "type": "rounds OR amrap OR emom",
+            "rounds": "number if type is rounds",
+            "time": "duration if type is amrap or emom",
+            "exercises": [
+              {"name": "exercise name", "reps": "repetitions"}
+            ]
+          }
+        },
+        {
+          "section_type": "recovery",
+          "content": "detailed recovery instructions"
         }
-      },
-      {
-        "section_type": "strength",
-        "content": {
-          "exercises": [
-            {"name": "exercise name", "reps": "sets and reps scheme"}
-          ]
-        }
-      },
-      {
-        "section_type": "wod",
-        "content": {
-          "type": "rounds OR amrap OR emom",
-          "rounds": "number if type is rounds",
-          "time": "duration if type is amrap or emom",
-          "exercises": [
-            {"name": "exercise name", "reps": "repetitions"}
-          ]
-        }
-      },
-      {
-        "section_type": "recovery",
-        "content": "detailed recovery instructions"
-      }
-    ]
-  }`;
+      ]
+    }`;
 };
 
 serve(async (req) => {
@@ -101,6 +75,17 @@ serve(async (req) => {
     const startDate = new Date();
     const promises = [];
 
+    // First, delete all existing workouts to prevent duplicates
+    const { error: deleteError } = await supabase
+      .from('cached_workouts')
+      .delete()
+      .gte('date', startDate.toISOString().split('T')[0]);
+
+    if (deleteError) {
+      console.error('Error deleting existing workouts:', deleteError);
+      throw deleteError;
+    }
+
     for (let i = 0; i < 7; i++) {
       const date = new Date(startDate);
       date.setDate(date.getDate() + i);
@@ -112,56 +97,47 @@ serve(async (req) => {
           for (const duration of durations) {
             console.log(`Generating workout for ${formattedDate}, ${workoutType}, ${difficulty}, ${duration}`);
 
-            // Check if workout already exists
-            const { data: existingWorkout } = await supabase
-              .from('cached_workouts')
-              .select('*')
-              .eq('date', formattedDate)
-              .eq('workout_type', workoutType)
-              .eq('difficulty', difficulty)
-              .eq('duration', duration)
-              .maybeSingle();
+            const prompt = generateWorkoutPrompt(formattedDate, workoutType, difficulty, duration);
+            
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${openAIApiKey}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [
+                  { 
+                    role: 'system', 
+                    content: 'You are an expert fitness coach specializing in creating structured workouts. Always respond with valid JSON matching the exact structure requested.' 
+                  },
+                  { role: 'user', content: prompt }
+                ],
+              }),
+            });
 
-            if (!existingWorkout) {
-              const prompt = generateWorkoutPrompt(formattedDate, workoutType, difficulty, duration);
-              
-              const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${openAIApiKey}`,
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  model: 'gpt-4o-mini',
-                  messages: [
-                    { 
-                      role: 'system', 
-                      content: 'You are an expert fitness coach specializing in creating structured workouts. Always respond with valid JSON matching the exact structure requested.' 
-                    },
-                    { role: 'user', content: prompt }
-                  ],
-                }),
-              });
-
-              if (!response.ok) {
-                throw new Error(`OpenAI API error: ${await response.text()}`);
-              }
-
-              const aiResponse = await response.json();
-              const workoutData = JSON.parse(aiResponse.choices[0].message.content);
-
-              promises.push(
-                supabase
-                  .from('cached_workouts')
-                  .insert({
-                    date: formattedDate,
-                    workout_type: workoutType,
-                    difficulty: difficulty,
-                    duration: duration,
-                    workout_data: workoutData
-                  })
-              );
+            if (!response.ok) {
+              throw new Error(`OpenAI API error: ${await response.text()}`);
             }
+
+            const aiResponse = await response.json();
+            const workoutData = JSON.parse(aiResponse.choices[0].message.content);
+
+            promises.push(
+              supabase
+                .from('cached_workouts')
+                .insert({
+                  date: formattedDate,
+                  workout_type: workoutType,
+                  difficulty: difficulty,
+                  duration: duration,
+                  workout_data: workoutData
+                })
+            );
+
+            // Add a small delay to avoid rate limiting
+            await new Promise(resolve => setTimeout(resolve, 500));
           }
         }
       }
