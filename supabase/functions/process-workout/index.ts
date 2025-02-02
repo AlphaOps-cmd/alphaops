@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+
+const openAIApiKey = Deno.env.get('OPENAI_API_KEY')!;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,181 +9,98 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-  const openAIApiKey = Deno.env.get('OPENAI_API_KEY')!;
-
-  const supabase = createClient(supabaseUrl, supabaseKey);
-
   try {
     const { date } = await req.json();
-    console.log('Processing workout for date:', date);
+    console.log('Generating workout for date:', date);
 
-    // First, try to find or create a workout for this date
-    let { data: workout, error: workoutError } = await supabase
-      .from('workouts')
-      .select('*')
-      .eq('date', date)
-      .maybeSingle();
-
-    if (workoutError) {
-      console.error('Error fetching workout:', workoutError);
-      throw workoutError;
-    }
-
-    // If no workout exists, create one
-    if (!workout) {
-      const { data: newWorkout, error: createError } = await supabase
-        .from('workouts')
-        .insert([{ date }])
-        .select()
-        .single();
-
-      if (createError) {
-        console.error('Error creating workout:', createError);
-        throw createError;
-      }
-
-      workout = newWorkout;
-    }
-
-    // Fetch workout sections
-    const { data: sections, error: sectionsError } = await supabase
-      .from('workout_sections')
-      .select('*')
-      .eq('workout_id', workout.id);
-
-    if (sectionsError) {
-      console.error('Error fetching sections:', sectionsError);
-      throw sectionsError;
-    }
-
-    // Check if we need to generate warmup or recovery
-    const hasWarmup = sections?.some(s => s.section_type === 'warmup');
-    const hasRecovery = sections?.some(s => s.section_type === 'recovery');
-    const wodSection = sections?.find(s => s.section_type === 'wod');
-    const strengthSection = sections?.find(s => s.section_type === 'strength');
-
-    if (!hasWarmup || !hasRecovery) {
-      console.log('Generating missing sections with OpenAI');
-
-      const prompt = `
-        As a CrossFit coach, generate a 
-        ${!hasWarmup ? 'warmup and ' : ''} 
-        ${!hasRecovery ? 'recovery routine ' : ''} 
-        for this workout:
-        
-        ${strengthSection ? `Strength: ${JSON.stringify(strengthSection.content)}\n` : ''}
-        WOD: ${JSON.stringify(wodSection?.content)}
-        
-        ${!hasWarmup ? 'For warmup, include 4-5 exercises with reps or duration.' : ''}
-        ${!hasRecovery ? 'For recovery, suggest specific stretches and duration.' : ''}
-        
-        Respond with this JSON structure:
-        {
-          ${!hasWarmup ? '"warmup": [{"name": "exercise", "reps": "repetitions"}],' : ''}
-          ${!hasRecovery ? '"recovery": "detailed description"' : ''}
-        }
-      `;
-
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openAIApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            { 
-              role: 'system', 
-              content: 'You are an expert CrossFit coach generating warmups and recovery routines.' 
-            },
-            { role: 'user', content: prompt }
-          ],
-        }),
-      });
-
-      if (!response.ok) {
-        console.error('OpenAI API error:', await response.text());
-        throw new Error('Failed to generate workout sections with OpenAI');
-      }
-
-      const aiResponse = await response.json();
-      console.log('OpenAI response:', aiResponse);
+    const prompt = `
+      As a CrossFit coach, generate a complete workout program that includes:
       
-      let suggestions;
-      try {
-        // Extract the JSON content from the message
-        const content = aiResponse.choices[0].message.content.trim();
-        suggestions = JSON.parse(content);
-      } catch (error) {
-        console.error('Error parsing OpenAI response:', error);
-        console.log('Raw response content:', aiResponse.choices[0].message.content);
-        throw new Error('Failed to parse OpenAI response');
-      }
-
-      // Insert new sections
-      if (!hasWarmup && suggestions.warmup) {
-        const { error: warmupError } = await supabase
-          .from('workout_sections')
-          .insert({
-            workout_id: workout.id,
-            section_type: 'warmup',
-            content: { exercises: suggestions.warmup }
-          });
-
-        if (warmupError) throw warmupError;
-      }
-
-      if (!hasRecovery && suggestions.recovery) {
-        const { error: recoveryError } = await supabase
-          .from('workout_sections')
-          .insert({
-            workout_id: workout.id,
-            section_type: 'recovery',
-            content: suggestions.recovery
-          });
-
-        if (recoveryError) throw recoveryError;
-      }
-
-      // Fetch updated workout with all sections
-      const { data: updatedWorkout, error: updateError } = await supabase
-        .from('workouts')
-        .select(`
-          *,
-          workout_sections (*)
-        `)
-        .eq('id', workout.id)
-        .single();
-
-      if (updateError) throw updateError;
+      1. A warmup section with 4-5 exercises (include name and reps/duration for each)
+      2. A strength section with 1-2 exercises (include name and reps/sets)
+      3. A WOD (Workout of the Day) that can be either:
+         - For rounds (3-5 rounds of specific exercises)
+         - For time (complete all exercises as fast as possible)
+      4. A recovery/cooldown routine with specific stretches and duration
       
-      console.log('Successfully updated workout with AI-generated sections');
-      return new Response(JSON.stringify(updatedWorkout), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      Respond with this exact JSON structure:
+      {
+        "workout_sections": [
+          {
+            "section_type": "warmup",
+            "content": {
+              "exercises": [
+                {"name": "exercise name", "reps": "repetitions or duration"}
+              ]
+            }
+          },
+          {
+            "section_type": "strength",
+            "content": {
+              "exercises": [
+                {"name": "exercise name", "reps": "sets and reps scheme"}
+              ]
+            }
+          },
+          {
+            "section_type": "wod",
+            "content": {
+              "type": "rounds OR fortime",
+              "rounds": "number (only if type is rounds)",
+              "exercises": [
+                {"name": "exercise name", "reps": "repetitions"}
+              ]
+            }
+          },
+          {
+            "section_type": "recovery",
+            "content": "detailed recovery instructions"
+          }
+        ]
+      }
+    `;
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { 
+            role: 'system', 
+            content: 'You are an expert CrossFit coach generating complete workout programs. Always respond with valid JSON matching the exact structure requested.' 
+          },
+          { role: 'user', content: prompt }
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('OpenAI API error:', await response.text());
+      throw new Error('Failed to generate workout with OpenAI');
     }
 
-    // If we already have all sections, just return the workout with its sections
-    const { data: fullWorkout, error: fullWorkoutError } = await supabase
-      .from('workouts')
-      .select(`
-        *,
-        workout_sections (*)
-      `)
-      .eq('id', workout.id)
-      .single();
+    const aiResponse = await response.json();
+    console.log('OpenAI response:', aiResponse);
+    
+    let workout;
+    try {
+      const content = aiResponse.choices[0].message.content.trim();
+      workout = JSON.parse(content);
+    } catch (error) {
+      console.error('Error parsing OpenAI response:', error);
+      console.log('Raw response content:', aiResponse.choices[0].message.content);
+      throw new Error('Failed to parse OpenAI response');
+    }
 
-    if (fullWorkoutError) throw fullWorkoutError;
-
-    return new Response(JSON.stringify(fullWorkout), {
+    return new Response(JSON.stringify(workout), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
