@@ -22,11 +22,19 @@ interface Recommendation {
   color: string;
 }
 
+const quickQuestions = [
+  "¿Cómo puedo mejorar mi técnica en los ejercicios?",
+  "¿Qué ejercicios son mejores para ganar fuerza?",
+  "¿Cómo debo planificar mi nutrición?",
+  "¿Cuánto tiempo debo descansar entre entrenamientos?",
+  "¿Qué ejercicios de movilidad recomiendas?"
+];
+
 const AICoach = () => {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([
     {
-      role: "ai",
+      role: "ai" as const,
       content: "¡Hola! Soy tu entrenador personal de AlphaOps AI. Puedo ayudarte con:\n\n" +
         "• Recomendaciones personalizadas de entrenamiento\n" +
         "• Correcciones de técnica en tiempo real\n" +
@@ -75,7 +83,7 @@ const AICoach = () => {
   const handleSendMessage = async (message: string = inputMessage) => {
     if (!message.trim()) return;
     
-    const newMessages = [...messages, { role: "user", content: message }];
+    const newMessages = [...messages, { role: "user" as const, content: message }];
     setMessages(newMessages);
     setInputMessage("");
     
@@ -86,7 +94,7 @@ const AICoach = () => {
       
       if (error) throw error;
       
-      setMessages([...newMessages, { role: "ai", content: data.response }]);
+      setMessages([...newMessages, { role: "ai" as const, content: data.response }]);
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
