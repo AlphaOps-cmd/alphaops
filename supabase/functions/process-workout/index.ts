@@ -21,7 +21,7 @@ serve(async (req) => {
     const { date, workoutType, difficulty, duration } = await req.json();
     console.log('Fetching workout for:', { date, workoutType, difficulty, duration });
 
-    // Get cached workout
+    // Get cached workout using maybeSingle() instead of single()
     const { data: workout, error } = await supabase
       .from('cached_workouts')
       .select('workout_data')
@@ -29,7 +29,7 @@ serve(async (req) => {
       .eq('workout_type', workoutType)
       .eq('difficulty', difficulty)
       .eq('duration', duration)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Error fetching workout:', error);
@@ -38,7 +38,28 @@ serve(async (req) => {
 
     if (!workout) {
       console.error('No workout found for the given parameters');
-      throw new Error('No workout found for the given parameters');
+      return new Response(
+        JSON.stringify({ 
+          workout_sections: [
+            {
+              section_type: 'warmup',
+              content: { exercises: [] }
+            },
+            {
+              section_type: 'wod',
+              content: { type: 'rounds', rounds: 3, exercises: [] }
+            },
+            {
+              section_type: 'recovery',
+              content: 'Cool down and stretch for 5-10 minutes'
+            }
+          ]
+        }), 
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      );
     }
 
     console.log('Successfully retrieved workout from cache');
