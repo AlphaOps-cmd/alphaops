@@ -7,48 +7,23 @@ import QuickQuestions from "@/components/ai-coach/QuickQuestions";
 import ChatInput from "@/components/ai-coach/ChatInput";
 import AIRecommendations from "@/components/ai-coach/AIRecommendations";
 import PremiumFeatureModal from "@/components/PremiumFeatureModal";
-
-const mockRecommendations = [
-  {
-    type: 'strength',
-    icon: '🏋️‍♂️',
-    message: "Aumenta tu peso en Squat un 5% la próxima sesión.",
-    color: "bg-emerald-500/10 border-emerald-500/20"
-  },
-  {
-    type: 'recovery',
-    icon: '⏳',
-    message: "Tu recuperación muscular está en el 80%, puedes entrenar con intensidad hoy.",
-    color: "bg-blue-500/10 border-blue-500/20"
-  },
-  {
-    type: 'training',
-    icon: '🔥',
-    message: "Llevas 4 días consecutivos de entrenamiento, considera un día de descanso activo.",
-    color: "bg-yellow-500/10 border-yellow-500/20"
-  },
-  {
-    type: 'nutrition',
-    icon: '🍽',
-    message: "Tu consumo calórico es bajo para el volumen de entrenamiento, aumenta tu ingesta de proteínas.",
-    color: "bg-red-500/10 border-red-500/20"
-  }
-];
-
-const quickQuestions = [
-  "¿Cómo mejoro mi resistencia en Hyrox?",
-  "Dime cómo mejorar mi técnica en Muscle-ups",
-  "Dame un plan de entrenamiento para Special Forces",
-  "¿Cuál es el mejor ejercicio para ganar fuerza?",
-  "¿Cómo puedo mejorar mi recuperación?",
-];
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   role: "user" | "ai";
   content: string;
 }
 
+interface Recommendation {
+  type: string;
+  icon: string;
+  message: string;
+  color: string;
+}
+
 const AICoach = () => {
+  const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "ai",
@@ -66,6 +41,8 @@ const AICoach = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [membership, setMembership] = useState('standard');
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(true);
 
   useEffect(() => {
     const storedMembership = localStorage.getItem('membership');
@@ -75,34 +52,60 @@ const AICoach = () => {
     if (storedMembership === 'standard') {
       setShowPremiumModal(true);
     }
+    fetchRecommendations();
   }, []);
 
-  const handlePremiumModalClose = () => {
-    setShowPremiumModal(false);
+  const fetchRecommendations = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('get-ai-recommendations');
+      if (error) throw error;
+      setRecommendations(data.recommendations);
+    } catch (error) {
+      console.error('Error fetching recommendations:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar las recomendaciones",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingRecommendations(false);
+    }
   };
 
-  const handleSendMessage = (message: string = inputMessage) => {
+  const handleSendMessage = async (message: string = inputMessage) => {
     if (!message.trim()) return;
     
-    const newMessages: Message[] = [
-      ...messages,
-      { role: "user", content: message },
-      { role: "ai", content: "Gracias por tu mensaje. Esta es una respuesta de ejemplo de la IA. En la implementación final, esto se conectará con un servicio de IA real." }
-    ];
-    
+    const newMessages = [...messages, { role: "user", content: message }];
     setMessages(newMessages);
     setInputMessage("");
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('chat-with-ai', {
+        body: { message }
+      });
+      
+      if (error) throw error;
+      
+      setMessages([...newMessages, { role: "ai", content: data.response }]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo enviar el mensaje",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleNextRecommendation = () => {
     setCurrentRecommendation((prev) => 
-      prev === mockRecommendations.length - 1 ? 0 : prev + 1
+      prev === recommendations.length - 1 ? 0 : prev + 1
     );
   };
 
   const handlePrevRecommendation = () => {
     setCurrentRecommendation((prev) => 
-      prev === 0 ? mockRecommendations.length - 1 : prev - 1
+      prev === 0 ? recommendations.length - 1 : prev - 1
     );
   };
 
@@ -121,7 +124,7 @@ const AICoach = () => {
   return (
     <>
       {membership === 'standard' && showPremiumModal ? (
-        <PremiumFeatureModal isOpen={showPremiumModal} onClose={handlePremiumModalClose} />
+        <PremiumFeatureModal isOpen={showPremiumModal} onClose={() => setShowPremiumModal(false)} />
       ) : (
         <div className="min-h-screen pb-20 bg-background">
           <div className="p-4 border-b">
@@ -134,11 +137,25 @@ const AICoach = () => {
           <div className="container mx-auto p-4 space-y-6 max-w-3xl">
             <section>
               <h2 className="text-xl font-semibold mb-4">Recomendaciones Inteligentes</h2>
-              <AIRecommendations
-                recommendation={mockRecommendations[currentRecommendation]}
-                onPrev={handlePrevRecommendation}
-                onNext={handleNextRecommendation}
-              />
+              {isLoadingRecommendations ? (
+                <div className="flex justify-center items-center h-32">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : recommendations.length > 0 ? (
+                <AIRecommendations
+                  recommendation={recommendations[currentRecommendation]}
+                  onPrev={handlePrevRecommendation}
+                  onNext={handleNextRecommendation}
+                />
+              ) : (
+                <Card>
+                  <CardContent className="p-4">
+                    <p className="text-center text-muted-foreground">
+                      No hay recomendaciones disponibles
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
             </section>
 
             <Card className="h-[500px] flex flex-col">

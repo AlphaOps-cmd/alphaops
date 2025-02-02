@@ -120,7 +120,7 @@ serve(async (req) => {
               .eq('workout_type', workoutType)
               .eq('difficulty', difficulty)
               .eq('duration', duration)
-              .single();
+              .maybeSingle();
 
             if (!existingWorkout) {
               const prompt = generateWorkoutPrompt(formattedDate, workoutType, difficulty, duration);
