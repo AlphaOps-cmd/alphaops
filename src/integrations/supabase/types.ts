@@ -29,21 +29,21 @@ export type Database = {
           content: Json
           created_at: string | null
           id: string
-          section_type: Database["public"]["Enums"]["workout_section_type"]
+          section_type: string
           workout_id: string
         }
         Insert: {
           content: Json
           created_at?: string | null
           id?: string
-          section_type: Database["public"]["Enums"]["workout_section_type"]
+          section_type: string
           workout_id: string
         }
         Update: {
           content?: Json
           created_at?: string | null
           id?: string
-          section_type?: Database["public"]["Enums"]["workout_section_type"]
+          section_type?: string
           workout_id?: string
         }
         Relationships: [

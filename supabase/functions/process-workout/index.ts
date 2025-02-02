@@ -72,21 +72,21 @@ serve(async (req) => {
       console.log('Generating missing sections with OpenAI');
 
       const prompt = `
-        Como un experto entrenador de CrossFit, necesito que generes un 
-        ${!hasWarmup ? 'calentamiento específico y' : ''} 
-        ${!hasRecovery ? 'rutina de recuperación' : ''} 
-        para el siguiente entrenamiento:
+        As a CrossFit coach, generate a 
+        ${!hasWarmup ? 'warmup and ' : ''} 
+        ${!hasRecovery ? 'recovery routine ' : ''} 
+        for this workout:
         
         ${strengthSection ? `Strength: ${JSON.stringify(strengthSection.content)}\n` : ''}
         WOD: ${JSON.stringify(wodSection?.content)}
         
-        ${!hasWarmup ? 'Para el calentamiento, incluye 4-5 ejercicios con sus repeticiones o duración.' : ''}
-        ${!hasRecovery ? 'Para la recuperación, sugiere estiramientos específicos y su duración.' : ''}
+        ${!hasWarmup ? 'For warmup, include 4-5 exercises with reps or duration.' : ''}
+        ${!hasRecovery ? 'For recovery, suggest specific stretches and duration.' : ''}
         
-        Responde en formato JSON con esta estructura:
+        Respond with this JSON structure:
         {
-          ${!hasWarmup ? '"warmup": [{"name": "ejercicio", "reps": "repeticiones"}],' : ''}
-          ${!hasRecovery ? '"recovery": "descripción detallada"' : ''}
+          ${!hasWarmup ? '"warmup": [{"name": "exercise", "reps": "repetitions"}],' : ''}
+          ${!hasRecovery ? '"recovery": "detailed description"' : ''}
         }
       `;
 
@@ -101,7 +101,7 @@ serve(async (req) => {
           messages: [
             { 
               role: 'system', 
-              content: 'Eres un experto entrenador de CrossFit que genera calentamientos y rutinas de recuperación específicas.' 
+              content: 'You are an expert CrossFit coach generating warmups and recovery routines.' 
             },
             { role: 'user', content: prompt }
           ],
@@ -114,7 +114,18 @@ serve(async (req) => {
       }
 
       const aiResponse = await response.json();
-      const suggestions = JSON.parse(aiResponse.choices[0].message.content);
+      console.log('OpenAI response:', aiResponse);
+      
+      let suggestions;
+      try {
+        // Extract the JSON content from the message
+        const content = aiResponse.choices[0].message.content.trim();
+        suggestions = JSON.parse(content);
+      } catch (error) {
+        console.error('Error parsing OpenAI response:', error);
+        console.log('Raw response content:', aiResponse.choices[0].message.content);
+        throw new Error('Failed to parse OpenAI response');
+      }
 
       // Insert new sections
       if (!hasWarmup && suggestions.warmup) {
