@@ -24,6 +24,65 @@ export type Database = {
         }
         Relationships: []
       }
+      workout_sections: {
+        Row: {
+          content: Json
+          created_at: string | null
+          id: string
+          section_type: Database["public"]["Enums"]["workout_section_type"]
+          workout_id: string
+        }
+        Insert: {
+          content: Json
+          created_at?: string | null
+          id?: string
+          section_type: Database["public"]["Enums"]["workout_section_type"]
+          workout_id: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string | null
+          id?: string
+          section_type?: Database["public"]["Enums"]["workout_section_type"]
+          workout_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_sections_workout_id_fkey"
+            columns: ["workout_id"]
+            isOneToOne: false
+            referencedRelation: "workouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workouts: {
+        Row: {
+          created_at: string | null
+          date: string
+          difficulty: string
+          duration: string
+          id: string
+          workout_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          difficulty?: string
+          duration?: string
+          id?: string
+          workout_type?: string
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          difficulty?: string
+          duration?: string
+          id?: string
+          workout_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -32,7 +91,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      workout_section_type: "warmup" | "strength" | "wod" | "recovery"
     }
     CompositeTypes: {
       [_ in never]: never
