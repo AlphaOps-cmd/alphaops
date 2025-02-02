@@ -23,35 +23,53 @@ serve(async (req) => {
     const { date } = await req.json();
     console.log('Processing workout for date:', date);
 
-    // Fetch workout and its sections
-    const { data: workout, error: workoutError } = await supabase
+    // First, try to find or create a workout for this date
+    let { data: workout, error: workoutError } = await supabase
       .from('workouts')
-      .select('*, workout_sections(*)')
+      .select('*')
       .eq('date', date)
-      .single();
+      .maybeSingle();
 
     if (workoutError) {
       console.error('Error fetching workout:', workoutError);
       throw workoutError;
     }
 
+    // If no workout exists, create one
     if (!workout) {
-      console.error('No workout found for date:', date);
-      throw new Error('No workout found for this date');
+      const { data: newWorkout, error: createError } = await supabase
+        .from('workouts')
+        .insert([{ date }])
+        .select()
+        .single();
+
+      if (createError) {
+        console.error('Error creating workout:', createError);
+        throw createError;
+      }
+
+      workout = newWorkout;
     }
 
-    console.log('Found workout:', workout);
+    // Fetch workout sections
+    const { data: sections, error: sectionsError } = await supabase
+      .from('workout_sections')
+      .select('*')
+      .eq('workout_id', workout.id);
+
+    if (sectionsError) {
+      console.error('Error fetching sections:', sectionsError);
+      throw sectionsError;
+    }
 
     // Check if we need to generate warmup or recovery
-    const sections = workout.workout_sections || [];
-    const hasWarmup = sections.some(s => s.section_type === 'warmup');
-    const hasRecovery = sections.some(s => s.section_type === 'recovery');
+    const hasWarmup = sections?.some(s => s.section_type === 'warmup');
+    const hasRecovery = sections?.some(s => s.section_type === 'recovery');
+    const wodSection = sections?.find(s => s.section_type === 'wod');
+    const strengthSection = sections?.find(s => s.section_type === 'strength');
 
     if (!hasWarmup || !hasRecovery) {
       console.log('Generating missing sections with OpenAI');
-      
-      const wodSection = sections.find(s => s.section_type === 'wod');
-      const strengthSection = sections.find(s => s.section_type === 'strength');
 
       const prompt = `
         Como un experto entrenador de CrossFit, necesito que generes un 
@@ -123,11 +141,14 @@ serve(async (req) => {
         if (recoveryError) throw recoveryError;
       }
 
-      // Fetch updated workout
+      // Fetch updated workout with all sections
       const { data: updatedWorkout, error: updateError } = await supabase
         .from('workouts')
-        .select('*, workout_sections(*)')
-        .eq('date', date)
+        .select(`
+          *,
+          workout_sections (*)
+        `)
+        .eq('id', workout.id)
         .single();
 
       if (updateError) throw updateError;
@@ -138,7 +159,19 @@ serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify(workout), {
+    // If we already have all sections, just return the workout with its sections
+    const { data: fullWorkout, error: fullWorkoutError } = await supabase
+      .from('workouts')
+      .select(`
+        *,
+        workout_sections (*)
+      `)
+      .eq('id', workout.id)
+      .single();
+
+    if (fullWorkoutError) throw fullWorkoutError;
+
+    return new Response(JSON.stringify(fullWorkout), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
