@@ -17,52 +17,71 @@ serve(async (req) => {
     const { date } = await req.json();
     console.log('Generating workout for date:', date);
 
-    const prompt = `
-      As a CrossFit coach, generate a complete workout program that includes:
-      
-      1. A warmup section with 4-5 exercises (include name and reps/duration for each)
-      2. A strength section with 1-2 exercises (include name and reps/sets)
-      3. A WOD (Workout of the Day) that can be either:
-         - For rounds (3-5 rounds of specific exercises)
-         - For time (complete all exercises as fast as possible)
-      4. A recovery/cooldown routine with specific stretches and duration
-      
-      Respond with this exact JSON structure:
-      {
-        "workout_sections": [
-          {
-            "section_type": "warmup",
-            "content": {
-              "exercises": [
-                {"name": "exercise name", "reps": "repetitions or duration"}
-              ]
-            }
-          },
-          {
-            "section_type": "strength",
-            "content": {
-              "exercises": [
-                {"name": "exercise name", "reps": "sets and reps scheme"}
-              ]
-            }
-          },
-          {
-            "section_type": "wod",
-            "content": {
-              "type": "rounds OR fortime",
-              "rounds": "number (only if type is rounds)",
-              "exercises": [
-                {"name": "exercise name", "reps": "repetitions"}
-              ]
-            }
-          },
-          {
-            "section_type": "recovery",
-            "content": "detailed recovery instructions"
-          }
+    // Get day of week (0 = Sunday, 1 = Monday, etc.)
+    const dayOfWeek = new Date(date).getDay();
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const currentDay = days[dayOfWeek];
+
+    // Define workout focus based on day
+    const workoutFocus = {
+      'Monday': 'Olympic lifting + short metabolic WOD',
+      'Tuesday': 'Gymnastics and functional strength',
+      'Wednesday': 'Endurance and aerobic capacity',
+      'Thursday': 'EMOM/E4MOM with weights + advanced skills',
+      'Friday': 'Max strength + long WOD',
+      'Saturday': 'Team workout or hero WOD',
+      'Sunday': 'Active recovery and mobility'
+    };
+
+    const prompt = `Generate an AlphaOps-style workout for ${currentDay} focusing on ${workoutFocus[currentDay]}.
+
+The workout should follow this exact JSON structure:
+{
+  "workout_sections": [
+    {
+      "section_type": "warmup",
+      "content": {
+        "exercises": [
+          {"name": "exercise name", "reps": "repetitions or duration"}
         ]
       }
-    `;
+    },
+    {
+      "section_type": "strength",
+      "content": {
+        "exercises": [
+          {"name": "exercise name", "reps": "sets and reps scheme"}
+        ]
+      }
+    },
+    {
+      "section_type": "wod",
+      "content": {
+        "type": "rounds",
+        "rounds": 3,
+        "exercises": [
+          {"name": "exercise name", "reps": "repetitions"}
+        ]
+      }
+    },
+    {
+      "section_type": "recovery",
+      "content": "detailed recovery instructions"
+    }
+  ]
+}
+
+Equipment available: Olympic bar, kettlebells, dumbbells, rings, climbing rope, ergometers (bike, row, ski), resistance bands, and sandbags.
+
+Make sure to:
+1. Include 4-5 warmup exercises focusing on mobility and activation
+2. For strength section, follow the day's focus
+3. Create a challenging but achievable WOD
+4. Include proper recovery and mobility work
+5. Use appropriate rep schemes and weights for the day's focus
+6. IMPORTANT: Return only valid JSON matching the exact structure above`;
+
+    console.log('Sending prompt to OpenAI...');
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -75,7 +94,7 @@ serve(async (req) => {
         messages: [
           { 
             role: 'system', 
-            content: 'You are an expert CrossFit coach generating complete workout programs. Always respond with valid JSON matching the exact structure requested.' 
+            content: 'You are an expert CrossFit and functional fitness coach specializing in creating AlphaOps-style workouts. Always respond with valid JSON matching the exact structure requested.' 
           },
           { role: 'user', content: prompt }
         ],
@@ -88,12 +107,15 @@ serve(async (req) => {
     }
 
     const aiResponse = await response.json();
-    console.log('OpenAI response:', aiResponse);
+    console.log('Received response from OpenAI');
     
     let workout;
     try {
       const content = aiResponse.choices[0].message.content.trim();
-      workout = JSON.parse(content);
+      // Remove any markdown formatting if present
+      const jsonContent = content.replace(/```json\n|\n```/g, '');
+      workout = JSON.parse(jsonContent);
+      console.log('Successfully parsed workout:', workout);
     } catch (error) {
       console.error('Error parsing OpenAI response:', error);
       console.log('Raw response content:', aiResponse.choices[0].message.content);
