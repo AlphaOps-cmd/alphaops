@@ -39,6 +39,60 @@ export type Database = {
         }
         Relationships: []
       }
+      user_profiles: {
+        Row: {
+          created_at: string | null
+          difficulty: Database["public"]["Enums"]["difficulty_level"]
+          id: string
+          preferred_workout_type: Database["public"]["Enums"]["workout_type"]
+          training_days: Json
+          user_id: string
+          workout_duration: Database["public"]["Enums"]["workout_duration"]
+        }
+        Insert: {
+          created_at?: string | null
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          id?: string
+          preferred_workout_type?: Database["public"]["Enums"]["workout_type"]
+          training_days?: Json
+          user_id: string
+          workout_duration?: Database["public"]["Enums"]["workout_duration"]
+        }
+        Update: {
+          created_at?: string | null
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          id?: string
+          preferred_workout_type?: Database["public"]["Enums"]["workout_type"]
+          training_days?: Json
+          user_id?: string
+          workout_duration?: Database["public"]["Enums"]["workout_duration"]
+        }
+        Relationships: []
+      }
+      user_strength_records: {
+        Row: {
+          created_at: string | null
+          exercise: string
+          id: string
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          created_at?: string | null
+          exercise: string
+          id?: string
+          user_id: string
+          weight: number
+        }
+        Update: {
+          created_at?: string | null
+          exercise?: string
+          id?: string
+          user_id?: string
+          weight?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
