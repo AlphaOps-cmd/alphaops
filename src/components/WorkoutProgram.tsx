@@ -14,6 +14,15 @@ import { Database } from '@/integrations/supabase/types';
 type WorkoutType = Database['public']['Enums']['workout_type'];
 type DifficultyLevel = Database['public']['Enums']['difficulty_level'];
 
+interface WorkoutSection {
+  section_type: string;
+  content: any;
+}
+
+interface WorkoutData {
+  workout_sections: WorkoutSection[];
+}
+
 const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
   const { toast } = useToast();
   const [showTimer, setShowTimer] = useState(false);
@@ -36,7 +45,7 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
 
       console.log('Formatted date:', formattedDate);
 
-      const { data: workout, error } = await supabase
+      const { data: workoutData, error } = await supabase
         .from('cached_workouts')
         .select('workout_data')
         .eq('date', formattedDate)
@@ -49,13 +58,13 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
         throw error;
       }
 
-      if (!workout) {
+      if (!workoutData) {
         console.log('No workout found for:', { formattedDate, workoutType, difficulty });
         throw new Error('No workout found for this date');
       }
 
-      console.log('Found workout:', workout);
-      return workout.workout_data;
+      console.log('Found workout:', workoutData);
+      return workoutData.workout_data as WorkoutData;
     },
     retry: 1
   });
@@ -75,7 +84,7 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
       return null;
     }
 
-    const sections = workout.workout_sections.reduce((acc, section) => {
+    const sections = workout.workout_sections.reduce((acc: Record<string, any>, section) => {
       acc[section.section_type] = section.content;
       return acc;
     }, {});
