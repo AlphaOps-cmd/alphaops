@@ -25,6 +25,7 @@ const WeeklyCalendar = ({ selectedDay = '14', onSelectDay }: { selectedDay?: str
         >
           <span className="text-sm">{item.day}</span>
           <span className="text-lg font-bold">{item.date}</span>
+          <span className="text-xs text-muted-foreground">Feb 2025</span>
         </button>
       ))}
     </div>

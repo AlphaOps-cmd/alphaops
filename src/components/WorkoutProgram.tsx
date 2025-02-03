@@ -35,11 +35,10 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
     queryFn: async () => {
       console.log('Fetching workout for:', { selectedDay, workoutType, difficulty });
       
-      // Format the date correctly for the current month and year
-      const currentDate = new Date();
+      // Format the date for February 2025
       const formattedDate = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth(),
+        2025,
+        1, // February (0-based)
         parseInt(selectedDay)
       ).toISOString().split('T')[0];
 
@@ -69,10 +68,8 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
       }
 
       console.log('Found workout:', workoutData);
-      // First cast to unknown, then to WorkoutData to satisfy TypeScript
       const parsedWorkout = workoutData.workout_data as unknown as WorkoutData;
       
-      // Validate the structure
       if (!parsedWorkout || !Array.isArray(parsedWorkout.workout_sections)) {
         console.error('Invalid workout data structure:', parsedWorkout);
         toast({
@@ -146,7 +143,7 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
     <div className="flex flex-col gap-6 p-4">
       <div className="flex-1">
         <h1 className="text-2xl font-bold text-center">TODAY'S WORKOUT</h1>
-        <p className="text-muted-foreground text-center mb-4">Week 3</p>
+        <p className="text-muted-foreground text-center mb-4">February 2025</p>
         <WorkoutSelector
           workoutType={workoutType}
           difficulty={difficulty}
