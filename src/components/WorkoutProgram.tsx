@@ -35,13 +35,13 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
     queryFn: async () => {
       console.log('Fetching workout for:', { selectedDay, workoutType, difficulty });
       
-      // Format the date correctly
+      // Format the date correctly for the current month and year
       const currentDate = new Date();
-      const currentMonth = currentDate.getMonth();
-      const currentYear = currentDate.getFullYear();
-      const formattedDate = new Date(currentYear, currentMonth, parseInt(selectedDay))
-        .toISOString()
-        .split('T')[0];
+      const formattedDate = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        parseInt(selectedDay)
+      ).toISOString().split('T')[0];
 
       console.log('Formatted date:', formattedDate);
 
@@ -55,11 +55,16 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
 
       if (error) {
         console.error('Supabase error:', error);
-        throw error;
+        throw new Error('Failed to fetch workout data');
       }
 
       if (!workoutData) {
         console.log('No workout found for:', { formattedDate, workoutType, difficulty });
+        toast({
+          title: "No workout available",
+          description: `No workout found for ${formattedDate}. Try a different date or workout type.`,
+          variant: "destructive"
+        });
         throw new Error('No workout found for this date');
       }
 
@@ -70,6 +75,11 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
       // Validate the structure
       if (!parsedWorkout || !Array.isArray(parsedWorkout.workout_sections)) {
         console.error('Invalid workout data structure:', parsedWorkout);
+        toast({
+          title: "Invalid workout data",
+          description: "The workout data is not in the correct format. Please try a different workout.",
+          variant: "destructive"
+        });
         throw new Error('Invalid workout data structure');
       }
 
@@ -116,10 +126,10 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
   };
 
   if (error) {
-    console.error('Error loading workout:', error);
     return (
-      <div className="flex flex-col items-center justify-center p-4">
-        <p className="text-red-500">Error loading workout. Please try again later.</p>
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <p className="text-red-500 mb-4">No workout available for this date.</p>
+        <p className="text-muted-foreground">Try selecting a different date or workout type.</p>
       </div>
     );
   }
