@@ -64,7 +64,16 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
       }
 
       console.log('Found workout:', workoutData);
-      return workoutData.workout_data as WorkoutData;
+      // First cast to unknown, then to WorkoutData to satisfy TypeScript
+      const parsedWorkout = workoutData.workout_data as unknown as WorkoutData;
+      
+      // Validate the structure
+      if (!parsedWorkout || !Array.isArray(parsedWorkout.workout_sections)) {
+        console.error('Invalid workout data structure:', parsedWorkout);
+        throw new Error('Invalid workout data structure');
+      }
+
+      return parsedWorkout;
     },
     retry: 1
   });
