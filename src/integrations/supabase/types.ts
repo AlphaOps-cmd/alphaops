@@ -39,6 +39,53 @@ export type Database = {
         }
         Relationships: []
       }
+      exercises: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          order_in_workout: number
+          reps: string
+          sets: number | null
+          updated_at: string
+          weight: string | null
+          workout_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          order_in_workout: number
+          reps: string
+          sets?: number | null
+          updated_at?: string
+          weight?: string | null
+          workout_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          order_in_workout?: number
+          reps?: string
+          sets?: number | null
+          updated_at?: string
+          weight?: string | null
+          workout_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercises_workout_id_fkey"
+            columns: ["workout_id"]
+            isOneToOne: false
+            referencedRelation: "workouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_profiles: {
         Row: {
           created_at: string | null
@@ -93,6 +140,86 @@ export type Database = {
         }
         Relationships: []
       }
+      workout_sections: {
+        Row: {
+          created_at: string
+          format: Database["public"]["Enums"]["workout_format"] | null
+          id: string
+          notes: string | null
+          rounds: number | null
+          section_type: string
+          time_cap: unknown | null
+          updated_at: string
+          workout_id: string
+        }
+        Insert: {
+          created_at?: string
+          format?: Database["public"]["Enums"]["workout_format"] | null
+          id?: string
+          notes?: string | null
+          rounds?: number | null
+          section_type: string
+          time_cap?: unknown | null
+          updated_at?: string
+          workout_id: string
+        }
+        Update: {
+          created_at?: string
+          format?: Database["public"]["Enums"]["workout_format"] | null
+          id?: string
+          notes?: string | null
+          rounds?: number | null
+          section_type?: string
+          time_cap?: unknown | null
+          updated_at?: string
+          workout_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_sections_workout_id_fkey"
+            columns: ["workout_id"]
+            isOneToOne: false
+            referencedRelation: "workouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workouts: {
+        Row: {
+          created_at: string
+          date: string
+          description: string
+          difficulty: Database["public"]["Enums"]["difficulty_level"]
+          duration: unknown
+          id: string
+          title: string | null
+          updated_at: string
+          workout_type: Database["public"]["Enums"]["workout_type"]
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          description: string
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          duration?: unknown
+          id?: string
+          title?: string | null
+          updated_at?: string
+          workout_type?: Database["public"]["Enums"]["workout_type"]
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          description?: string
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          duration?: unknown
+          id?: string
+          title?: string | null
+          updated_at?: string
+          workout_type?: Database["public"]["Enums"]["workout_type"]
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -103,6 +230,7 @@ export type Database = {
     Enums: {
       difficulty_level: "Beginner" | "Intermediate" | "Advanced"
       workout_duration: "30 min" | "45 min" | "60 min"
+      workout_format: "AMRAP" | "EMOM" | "For Time" | "Rounds"
       workout_section_type: "warmup" | "strength" | "wod" | "recovery"
       workout_type: "CrossFit" | "Special Forces" | "Hyrox" | "Home Workout"
     }
