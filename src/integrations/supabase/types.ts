@@ -6,42 +6,38 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export type WorkoutType = 'CrossFit' | 'Special Forces' | 'Hyrox' | 'Home Workout'
-export type DifficultyLevel = 'Beginner' | 'Intermediate' | 'Advanced'
-export type WorkoutDuration = '30 min' | '45 min' | '60 min'
-export type WorkoutFormat = 'AMRAP' | 'EMOM' | 'For Time' | 'Rounds'
-
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       cached_workouts: {
         Row: {
-          id: number
-          date: string
-          workout_type: WorkoutType
-          difficulty: DifficultyLevel
-          duration: WorkoutDuration
-          workout_data: Json
           created_at: string | null
+          date: string
+          difficulty: Database["public"]["Enums"]["difficulty_level"]
+          duration: Database["public"]["Enums"]["workout_duration"]
+          id: number
+          workout_data: Json
+          workout_type: Database["public"]["Enums"]["workout_type"]
         }
         Insert: {
-          id: number
-          date: string
-          workout_type: WorkoutType
-          difficulty: DifficultyLevel
-          duration: WorkoutDuration
-          workout_data: Json
           created_at?: string | null
+          date: string
+          difficulty: Database["public"]["Enums"]["difficulty_level"]
+          duration: Database["public"]["Enums"]["workout_duration"]
+          id: number
+          workout_data: Json
+          workout_type: Database["public"]["Enums"]["workout_type"]
         }
         Update: {
-          id?: number
-          date?: string
-          workout_type?: WorkoutType
-          difficulty?: DifficultyLevel
-          duration?: WorkoutDuration
-          workout_data?: Json
           created_at?: string | null
+          date?: string
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          duration?: Database["public"]["Enums"]["workout_duration"]
+          id?: number
+          workout_data?: Json
+          workout_type?: Database["public"]["Enums"]["workout_type"]
         }
+        Relationships: []
       }
       exercises: {
         Row: {
@@ -93,30 +89,30 @@ export interface Database {
       user_profiles: {
         Row: {
           created_at: string | null
-          difficulty: DifficultyLevel
+          difficulty: Database["public"]["Enums"]["difficulty_level"]
           id: string
-          preferred_workout_type: WorkoutType
+          preferred_workout_type: Database["public"]["Enums"]["workout_type"]
           training_days: Json
           user_id: string
-          workout_duration: WorkoutDuration
+          workout_duration: Database["public"]["Enums"]["workout_duration"]
         }
         Insert: {
           created_at?: string | null
-          difficulty?: DifficultyLevel
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
           id?: string
-          preferred_workout_type?: WorkoutType
+          preferred_workout_type?: Database["public"]["Enums"]["workout_type"]
           training_days?: Json
           user_id: string
-          workout_duration?: WorkoutDuration
+          workout_duration?: Database["public"]["Enums"]["workout_duration"]
         }
         Update: {
           created_at?: string | null
-          difficulty?: DifficultyLevel
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
           id?: string
-          preferred_workout_type?: WorkoutType
+          preferred_workout_type?: Database["public"]["Enums"]["workout_type"]
           training_days?: Json
           user_id?: string
-          workout_duration?: WorkoutDuration
+          workout_duration?: Database["public"]["Enums"]["workout_duration"]
         }
         Relationships: []
       }
@@ -147,7 +143,7 @@ export interface Database {
       workout_sections: {
         Row: {
           created_at: string
-          format: WorkoutFormat | null
+          format: Database["public"]["Enums"]["workout_format"] | null
           id: string
           notes: string | null
           rounds: number | null
@@ -158,7 +154,7 @@ export interface Database {
         }
         Insert: {
           created_at?: string
-          format?: WorkoutFormat | null
+          format?: Database["public"]["Enums"]["workout_format"] | null
           id?: string
           notes?: string | null
           rounds?: number | null
@@ -169,7 +165,7 @@ export interface Database {
         }
         Update: {
           created_at?: string
-          format?: WorkoutFormat | null
+          format?: Database["public"]["Enums"]["workout_format"] | null
           id?: string
           notes?: string | null
           rounds?: number | null
@@ -193,34 +189,34 @@ export interface Database {
           created_at: string
           date: string
           description: string
-          difficulty: DifficultyLevel
+          difficulty: Database["public"]["Enums"]["difficulty_level"]
           duration: unknown
           id: string
           title: string | null
           updated_at: string
-          workout_type: WorkoutType
+          workout_type: Database["public"]["Enums"]["workout_type"]
         }
         Insert: {
           created_at?: string
           date: string
           description: string
-          difficulty?: DifficultyLevel
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
           duration?: unknown
-          id: string
+          id?: string
           title?: string | null
           updated_at?: string
-          workout_type?: WorkoutType
+          workout_type?: Database["public"]["Enums"]["workout_type"]
         }
         Update: {
           created_at?: string
           date?: string
           description?: string
-          difficulty?: DifficultyLevel
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
           duration?: unknown
           id?: string
           title?: string | null
           updated_at?: string
-          workout_type?: WorkoutType
+          workout_type?: Database["public"]["Enums"]["workout_type"]
         }
         Relationships: []
       }
@@ -232,10 +228,11 @@ export interface Database {
       [_ in never]: never
     }
     Enums: {
-      difficulty_level: DifficultyLevel
-      workout_duration: WorkoutDuration
-      workout_format: WorkoutFormat
-      workout_type: WorkoutType
+      difficulty_level: "Beginner" | "Intermediate" | "Advanced"
+      workout_duration: "30 min" | "45 min" | "60 min"
+      workout_format: "AMRAP" | "EMOM" | "For Time" | "Rounds"
+      workout_section_type: "warmup" | "strength" | "wod" | "recovery"
+      workout_type: "CrossFit" | "Special Forces" | "Hyrox" | "Home Workout"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -243,82 +240,99 @@ export interface Database {
   }
 }
 
+type PublicSchema = Database[Extract<keyof Database, "public">]
+
 export type Tables<
   PublicTableNameOrOptions extends
-    | keyof (Database['public']['Tables'] & Database['public']['Views'])
+    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions['schema']]['Tables'] &
-        Database[PublicTableNameOrOptions['schema']]['Views'])
+    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+        Database[PublicTableNameOrOptions["schema"]]["Views"])
     : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[PublicTableNameOrOptions['schema']]['Tables'] &
-      Database[PublicTableNameOrOptions['schema']]['Views'])[TableName] extends {
+  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : PublicTableNameOrOptions extends keyof (Database['public']['Tables'] &
-      Database['public']['Views'])
-  ? (Database['public']['Tables'] &
-      Database['public']['Views'])[PublicTableNameOrOptions] extends {
-      Row: infer R
-    }
-    ? R
+  : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
+        PublicSchema["Views"])
+    ? (PublicSchema["Tables"] &
+        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
     : never
-  : never
 
 export type TablesInsert<
   PublicTableNameOrOptions extends
-    | keyof Database['public']['Tables']
+    | keyof PublicSchema["Tables"]
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions['schema']]['Tables']
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : PublicTableNameOrOptions extends keyof Database['public']['Tables']
-  ? Database['public']['Tables'][PublicTableNameOrOptions] extends {
-      Insert: infer I
-    }
-    ? I
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
     : never
-  : never
 
 export type TablesUpdate<
   PublicTableNameOrOptions extends
-    | keyof Database['public']['Tables']
+    | keyof PublicSchema["Tables"]
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions['schema']]['Tables']
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : PublicTableNameOrOptions extends keyof Database['public']['Tables']
-  ? Database['public']['Tables'][PublicTableNameOrOptions] extends {
-      Update: infer U
-    }
-    ? U
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
     : never
-  : never
 
 export type Enums<
   PublicEnumNameOrOptions extends
-    | keyof Database['public']['Enums']
+    | keyof PublicSchema["Enums"]
     | { schema: keyof Database },
   EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicEnumNameOrOptions['schema']]['Enums']
+    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
 > = PublicEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicEnumNameOrOptions['schema']]['Enums'][EnumName]
-  : PublicEnumNameOrOptions extends keyof Database['public']['Enums']
-  ? Database['public']['Enums'][PublicEnumNameOrOptions]
-  : never
+  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
+    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof PublicSchema["CompositeTypes"]
+    | { schema: keyof Database },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
+    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
