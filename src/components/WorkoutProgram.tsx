@@ -21,37 +21,43 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
   const [difficulty, setDifficulty] = useState<DifficultyLevel>('Intermediate');
 
   // Fetch workout from database
-  const { data: workout, isLoading, refetch } = useQuery({
+  const { data: workout, isLoading, error } = useQuery({
     queryKey: ['workout', selectedDay, workoutType, difficulty],
     queryFn: async () => {
-      const date = new Date();
-      date.setDate(parseInt(selectedDay));
-      const formattedDate = date.toISOString().split('T')[0];
+      console.log('Fetching workout for:', { selectedDay, workoutType, difficulty });
+      
+      // Format the date correctly
+      const currentDate = new Date();
+      const currentMonth = currentDate.getMonth();
+      const currentYear = currentDate.getFullYear();
+      const formattedDate = new Date(currentYear, currentMonth, parseInt(selectedDay))
+        .toISOString()
+        .split('T')[0];
 
-      // First get the base workout
-      const { data: baseWorkout, error } = await supabase
+      console.log('Formatted date:', formattedDate);
+
+      const { data: workout, error } = await supabase
         .from('cached_workouts')
         .select('workout_data')
         .eq('date', formattedDate)
         .eq('workout_type', workoutType)
+        .eq('difficulty', difficulty)
         .maybeSingle();
 
-      if (error) throw error;
-      if (!baseWorkout) {
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      if (!workout) {
+        console.log('No workout found for:', { formattedDate, workoutType, difficulty });
         throw new Error('No workout found for this date');
       }
 
-      // If difficulty changes, adjust the workout
-      const response = await supabase.functions.invoke('adjust-workout-difficulty', {
-        body: { 
-          currentWorkout: baseWorkout.workout_data,
-          targetDifficulty: difficulty
-        }
-      });
-
-      if (response.error) throw response.error;
-      return response.data;
-    }
+      console.log('Found workout:', workout);
+      return workout.workout_data;
+    },
+    retry: 1
   });
 
   const handleDifficultyChange = async (newDifficulty: DifficultyLevel) => {
@@ -60,17 +66,21 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
       title: "Adjusting workout difficulty",
       description: "Modifying the workout for " + newDifficulty + " level",
     });
-    await refetch();
   };
 
   // Format workout sections for display
   const formatWorkoutSections = () => {
-    if (!workout?.workout_sections) return null;
+    if (!workout?.workout_sections) {
+      console.log('No workout sections found:', workout);
+      return null;
+    }
 
     const sections = workout.workout_sections.reduce((acc, section) => {
       acc[section.section_type] = section.content;
       return acc;
     }, {});
+
+    console.log('Formatted sections:', sections);
 
     return {
       warmup: sections.warmup?.exercises || [],
@@ -86,6 +96,15 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
     recovery: '',
     strength: null
   };
+
+  if (error) {
+    console.error('Error loading workout:', error);
+    return (
+      <div className="flex flex-col items-center justify-center p-4">
+        <p className="text-red-500">Error loading workout. Please try again later.</p>
+      </div>
+    );
+  }
 
   if (showTimer) {
     return <WorkoutTimer 
