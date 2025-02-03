@@ -9,12 +9,13 @@ import WorkoutRecovery from './WorkoutRecovery';
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from '@tanstack/react-query';
 import { useToast } from "@/hooks/use-toast";
+import type { WorkoutType, DifficultyLevel } from '@/integrations/supabase/types';
 
 const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
   const { toast } = useToast();
   const [showTimer, setShowTimer] = useState(false);
-  const [workoutType, setWorkoutType] = useState('CrossFit');
-  const [difficulty, setDifficulty] = useState('Intermediate');
+  const [workoutType, setWorkoutType] = useState<WorkoutType>('CrossFit');
+  const [difficulty, setDifficulty] = useState<DifficultyLevel>('Intermediate');
 
   // Fetch workout from database
   const { data: workout, isLoading, refetch } = useQuery({
@@ -50,7 +51,7 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
     }
   });
 
-  const handleDifficultyChange = async (newDifficulty: string) => {
+  const handleDifficultyChange = async (newDifficulty: DifficultyLevel) => {
     setDifficulty(newDifficulty);
     toast({
       title: "Adjusting workout difficulty",
