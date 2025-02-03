@@ -15,7 +15,7 @@ export type Database = {
           date: string
           difficulty: Database["public"]["Enums"]["difficulty_level"]
           duration: Database["public"]["Enums"]["workout_duration"]
-          id: string
+          id: number
           workout_data: Json
           workout_type: Database["public"]["Enums"]["workout_type"]
         }
@@ -24,7 +24,7 @@ export type Database = {
           date: string
           difficulty: Database["public"]["Enums"]["difficulty_level"]
           duration: Database["public"]["Enums"]["workout_duration"]
-          id?: string
+          id: number
           workout_data: Json
           workout_type: Database["public"]["Enums"]["workout_type"]
         }
@@ -33,7 +33,7 @@ export type Database = {
           date?: string
           difficulty?: Database["public"]["Enums"]["difficulty_level"]
           duration?: Database["public"]["Enums"]["workout_duration"]
-          id?: string
+          id?: number
           workout_data?: Json
           workout_type?: Database["public"]["Enums"]["workout_type"]
         }

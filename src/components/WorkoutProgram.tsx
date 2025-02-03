@@ -8,27 +8,40 @@ import WorkoutMain from './WorkoutMain';
 import WorkoutRecovery from './WorkoutRecovery';
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from '@tanstack/react-query';
+import { useToast } from "@/hooks/use-toast";
 
 const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
+  const { toast } = useToast();
   const [showTimer, setShowTimer] = useState(false);
   const [workoutType, setWorkoutType] = useState('CrossFit');
   const [difficulty, setDifficulty] = useState('Intermediate');
-  const [duration, setDuration] = useState('45 min');
 
-  // Fetch workout from database and process with AI if needed
-  const { data: workout, isLoading } = useQuery({
-    queryKey: ['workout', selectedDay, workoutType, difficulty, duration],
+  // Fetch workout from database
+  const { data: workout, isLoading, refetch } = useQuery({
+    queryKey: ['workout', selectedDay, workoutType, difficulty],
     queryFn: async () => {
       const date = new Date();
       date.setDate(parseInt(selectedDay));
       const formattedDate = date.toISOString().split('T')[0];
 
-      const response = await supabase.functions.invoke('process-workout', {
+      // First get the base workout
+      const { data: baseWorkout, error } = await supabase
+        .from('cached_workouts')
+        .select('workout_data')
+        .eq('date', formattedDate)
+        .eq('workout_type', workoutType)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!baseWorkout) {
+        throw new Error('No workout found for this date');
+      }
+
+      // If difficulty changes, adjust the workout
+      const response = await supabase.functions.invoke('adjust-workout-difficulty', {
         body: { 
-          date: formattedDate,
-          workoutType,
-          difficulty,
-          duration
+          currentWorkout: baseWorkout.workout_data,
+          targetDifficulty: difficulty
         }
       });
 
@@ -36,6 +49,15 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
       return response.data;
     }
   });
+
+  const handleDifficultyChange = async (newDifficulty: string) => {
+    setDifficulty(newDifficulty);
+    toast({
+      title: "Adjusting workout difficulty",
+      description: "Modifying the workout for " + newDifficulty + " level",
+    });
+    await refetch();
+  };
 
   // Format workout sections for display
   const formatWorkoutSections = () => {
@@ -77,10 +99,8 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
         <WorkoutSelector
           workoutType={workoutType}
           difficulty={difficulty}
-          duration={duration}
           onWorkoutTypeChange={setWorkoutType}
-          onDifficultyChange={setDifficulty}
-          onDurationChange={setDuration}
+          onDifficultyChange={handleDifficultyChange}
         />
       </div>
 
