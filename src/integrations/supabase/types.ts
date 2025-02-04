@@ -9,33 +9,7 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      cached_workouts: {
-        Row: {
-          created_at: string | null
-          date: string
-          difficulty: Database["public"]["Enums"]["difficulty_level"]
-          id: number
-          workout_data: Json
-          workout_type: Database["public"]["Enums"]["workout_type"]
-        }
-        Insert: {
-          created_at?: string | null
-          date: string
-          difficulty: Database["public"]["Enums"]["difficulty_level"]
-          id?: number
-          workout_data: Json
-          workout_type: Database["public"]["Enums"]["workout_type"]
-        }
-        Update: {
-          created_at?: string | null
-          date?: string
-          difficulty?: Database["public"]["Enums"]["difficulty_level"]
-          id?: number
-          workout_data?: Json
-          workout_type?: Database["public"]["Enums"]["workout_type"]
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
@@ -44,8 +18,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      difficulty_level: "Beginner" | "Intermediate" | "Advanced"
-      workout_type: "CrossFit" | "Special Forces" | "Hyrox" | "Home Workout"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
