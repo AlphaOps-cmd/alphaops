@@ -1,17 +1,16 @@
 import React from 'react';
 import { Button } from './ui/button';
 import { Slash, Dumbbell } from 'lucide-react';
-import type { WorkoutType, DifficultyLevel } from '@/integrations/supabase/types';
 
 interface WorkoutSelectorProps {
-  workoutType: WorkoutType;
-  difficulty: DifficultyLevel;
-  onWorkoutTypeChange: (type: WorkoutType) => void;
-  onDifficultyChange: (difficulty: DifficultyLevel) => void;
+  workoutType: string;
+  difficulty: string;
+  onWorkoutTypeChange: (type: string) => void;
+  onDifficultyChange: (difficulty: string) => void;
 }
 
-const workoutTypes: WorkoutType[] = ['CrossFit', 'Special Forces', 'Hyrox', 'Home Workout'];
-const difficulties: DifficultyLevel[] = ['Beginner', 'Intermediate', 'Advanced'];
+const workoutTypes = ['CrossFit', 'Special Forces', 'Hyrox'];
+const difficulties = ['Beginner', 'Intermediate', 'Advanced'];
 
 const WorkoutSelector = ({
   workoutType,
@@ -19,7 +18,7 @@ const WorkoutSelector = ({
   onWorkoutTypeChange,
   onDifficultyChange,
 }: WorkoutSelectorProps) => {
-  const cycleValue = <T extends string>(current: T, options: T[]): T => {
+  const cycleValue = (current: string, options: string[]) => {
     const currentIndex = options.indexOf(current);
     const nextIndex = (currentIndex + 1) % options.length;
     return options[nextIndex];

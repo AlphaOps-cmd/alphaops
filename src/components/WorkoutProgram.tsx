@@ -9,80 +9,48 @@ import WorkoutRecovery from './WorkoutRecovery';
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from '@tanstack/react-query';
 import { useToast } from "@/hooks/use-toast";
-import type { WorkoutType, DifficultyLevel, WorkoutData } from '@/integrations/supabase/types';
 
 const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
   const { toast } = useToast();
   const [showTimer, setShowTimer] = useState(false);
-  const [workoutType, setWorkoutType] = useState<WorkoutType>('CrossFit');
-  const [difficulty, setDifficulty] = useState<DifficultyLevel>('Intermediate');
+  const [workoutType, setWorkoutType] = useState('CrossFit');
+  const [difficulty, setDifficulty] = useState('Intermediate');
 
+  // Fetch workout from database
   const { data: workout, isLoading, refetch } = useQuery({
     queryKey: ['workout', selectedDay, workoutType, difficulty],
     queryFn: async () => {
-      try {
-        console.log('Fetching workout with params:', { selectedDay, workoutType, difficulty });
-        const date = new Date();
-        date.setDate(parseInt(selectedDay));
-        const formattedDate = date.toISOString().split('T')[0];
+      const date = new Date();
+      date.setDate(parseInt(selectedDay));
+      const formattedDate = date.toISOString().split('T')[0];
 
-        const { data: baseWorkout, error } = await supabase
-          .from('cached_workouts')
-          .select('workout_data')
-          .eq('date', formattedDate)
-          .eq('workout_type', workoutType)
-          .maybeSingle();
+      // First get the base workout
+      const { data: baseWorkout, error } = await supabase
+        .from('cached_workouts')
+        .select('workout_data')
+        .eq('date', formattedDate)
+        .eq('workout_type', workoutType)
+        .maybeSingle();
 
-        if (error) {
-          console.error('Error fetching workout:', error);
-          throw error;
-        }
-
-        if (!baseWorkout) {
-          console.log('No workout found for:', { formattedDate, workoutType });
-          return {
-            workout_sections: [
-              {
-                section_type: 'warmup',
-                content: { exercises: [] }
-              },
-              {
-                section_type: 'wod',
-                content: { type: 'rounds', rounds: 3, exercises: [] }
-              },
-              {
-                section_type: 'recovery',
-                content: 'Cool down and stretch for 5-10 minutes'
-              }
-            ]
-          } as WorkoutData;
-        }
-
-        console.log('Base workout found:', baseWorkout);
-        return baseWorkout.workout_data as WorkoutData;
-      } catch (error) {
-        console.error('Error in workout fetch:', error);
-        return {
-          workout_sections: [
-            {
-              section_type: 'warmup',
-              content: { exercises: [] }
-            },
-            {
-              section_type: 'wod',
-              content: { type: 'rounds', rounds: 3, exercises: [] }
-            },
-            {
-              section_type: 'recovery',
-              content: 'Cool down and stretch for 5-10 minutes'
-            }
-          ]
-        } as WorkoutData;
+      if (error) throw error;
+      if (!baseWorkout) {
+        throw new Error('No workout found for this date');
       }
+
+      // If difficulty changes, adjust the workout
+      const response = await supabase.functions.invoke('adjust-workout-difficulty', {
+        body: { 
+          currentWorkout: baseWorkout.workout_data,
+          targetDifficulty: difficulty
+        }
+      });
+
+      if (response.error) throw response.error;
+      return response.data;
     }
   });
 
-  const handleDifficultyChange = async (newDifficulty: DifficultyLevel) => {
+  const handleDifficultyChange = async (newDifficulty: string) => {
     setDifficulty(newDifficulty);
     toast({
       title: "Adjusting workout difficulty",
@@ -91,28 +59,11 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
     await refetch();
   };
 
-  const handleWorkoutTypeChange = async (newType: WorkoutType) => {
-    setWorkoutType(newType);
-    toast({
-      title: "Changing workout type",
-      description: "Loading " + newType + " workout",
-    });
-    await refetch();
-  };
-
+  // Format workout sections for display
   const formatWorkoutSections = () => {
-    if (!workout?.workout_sections) {
-      console.log('No workout sections found');
-      return {
-        warmup: [],
-        workout: { type: 'rounds', rounds: 3, exercises: [] },
-        recovery: '',
-        strength: null
-      };
-    }
+    if (!workout?.workout_sections) return null;
 
-    console.log('Formatting workout sections:', workout.workout_sections);
-    const sections = workout.workout_sections.reduce((acc: any, section: any) => {
+    const sections = workout.workout_sections.reduce((acc, section) => {
       acc[section.section_type] = section.content;
       return acc;
     }, {});
@@ -125,7 +76,12 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
     };
   };
 
-  const currentWorkout = formatWorkoutSections();
+  const currentWorkout = formatWorkoutSections() || {
+    warmup: [],
+    workout: { type: 'rounds', rounds: 3, exercises: [] },
+    recovery: '',
+    strength: null
+  };
 
   if (showTimer) {
     return <WorkoutTimer 
@@ -143,7 +99,7 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
         <WorkoutSelector
           workoutType={workoutType}
           difficulty={difficulty}
-          onWorkoutTypeChange={handleWorkoutTypeChange}
+          onWorkoutTypeChange={setWorkoutType}
           onDifficultyChange={handleDifficultyChange}
         />
       </div>
@@ -159,7 +115,7 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
             <section className="mt-8">
               <h2 className="text-xl font-bold mb-4">STRENGTH:</h2>
               <div className="space-y-4">
-                {currentWorkout.strength.exercises.map((exercise: any, index: number) => (
+                {currentWorkout.strength.exercises.map((exercise, index) => (
                   <div key={index} className="exercise-item">
                     <Play className="h-5 w-5 text-primary mt-1" />
                     <div>

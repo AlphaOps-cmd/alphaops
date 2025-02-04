@@ -14,6 +14,7 @@ export type Database = {
           created_at: string | null
           date: string
           difficulty: Database["public"]["Enums"]["difficulty_level"]
+          duration: Database["public"]["Enums"]["workout_duration"]
           id: number
           workout_data: Json
           workout_type: Database["public"]["Enums"]["workout_type"]
@@ -22,7 +23,8 @@ export type Database = {
           created_at?: string | null
           date: string
           difficulty: Database["public"]["Enums"]["difficulty_level"]
-          id?: number
+          duration: Database["public"]["Enums"]["workout_duration"]
+          id: number
           workout_data: Json
           workout_type: Database["public"]["Enums"]["workout_type"]
         }
@@ -30,9 +32,64 @@ export type Database = {
           created_at?: string | null
           date?: string
           difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          duration?: Database["public"]["Enums"]["workout_duration"]
           id?: number
           workout_data?: Json
           workout_type?: Database["public"]["Enums"]["workout_type"]
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          created_at: string | null
+          difficulty: Database["public"]["Enums"]["difficulty_level"]
+          id: string
+          preferred_workout_type: Database["public"]["Enums"]["workout_type"]
+          training_days: Json
+          user_id: string
+          workout_duration: Database["public"]["Enums"]["workout_duration"]
+        }
+        Insert: {
+          created_at?: string | null
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          id?: string
+          preferred_workout_type?: Database["public"]["Enums"]["workout_type"]
+          training_days?: Json
+          user_id: string
+          workout_duration?: Database["public"]["Enums"]["workout_duration"]
+        }
+        Update: {
+          created_at?: string | null
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          id?: string
+          preferred_workout_type?: Database["public"]["Enums"]["workout_type"]
+          training_days?: Json
+          user_id?: string
+          workout_duration?: Database["public"]["Enums"]["workout_duration"]
+        }
+        Relationships: []
+      }
+      user_strength_records: {
+        Row: {
+          created_at: string | null
+          exercise: string
+          id: string
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          created_at?: string | null
+          exercise: string
+          id?: string
+          user_id: string
+          weight: number
+        }
+        Update: {
+          created_at?: string | null
+          exercise?: string
+          id?: string
+          user_id?: string
+          weight?: number
         }
         Relationships: []
       }
@@ -45,6 +102,8 @@ export type Database = {
     }
     Enums: {
       difficulty_level: "Beginner" | "Intermediate" | "Advanced"
+      workout_duration: "30 min" | "45 min" | "60 min"
+      workout_section_type: "warmup" | "strength" | "wod" | "recovery"
       workout_type: "CrossFit" | "Special Forces" | "Hyrox" | "Home Workout"
     }
     CompositeTypes: {
