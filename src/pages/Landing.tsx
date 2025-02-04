@@ -11,16 +11,17 @@ const Landing = () => {
         ENTRENAMIENTO RESISTENCIA FUERZA DISCIPLINA PODER
       </div>
       
-      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4">
-        {/* Main image */}
-        <div className="relative w-full max-w-md mb-8">
-          <img 
-            src="/lovable-uploads/ada8ee7b-6dfc-4343-a6a6-24b3a46b8179.png"
-            alt="Tactical Operator"
-            className="w-full object-cover"
-          />
-        </div>
-
+      {/* Background image */}
+      <div className="absolute inset-0 z-0">
+        <img 
+          src="/lovable-uploads/ada8ee7b-6dfc-4343-a6a6-24b3a46b8179.png"
+          alt="Tactical Operator"
+          className="w-full h-full object-cover object-top"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/30" />
+      </div>
+      
+      <div className="relative z-10 min-h-screen flex flex-col items-center justify-end pb-16 px-4">
         {/* Text */}
         <h1 className="text-4xl font-bold mb-2">Ganar músculo</h1>
         <h2 className="text-4xl font-bold mb-8 text-blue-600">Perder peso</h2>
@@ -46,13 +47,13 @@ const Landing = () => {
         <div className="mt-8 text-sm text-gray-400 text-center">
           <p>
             Al continuar, aceptas nuestros{' '}
-            <a href="#" className="text-orange-500 hover:underline">Términos de uso</a>
+            <a href="#" className="text-green-700 hover:underline">Términos de uso</a>
             {' '}y nuestra{' '}
-            <a href="#" className="text-orange-500 hover:underline">Política de privacidad</a>
+            <a href="#" className="text-green-700 hover:underline">Política de privacidad</a>
           </p>
           <p className="mt-2">
             ¿Necesitas ayuda?{' '}
-            <a href="#" className="text-orange-500 hover:underline">Contáctanos</a>
+            <a href="#" className="text-green-700 hover:underline">Contáctanos</a>
           </p>
         </div>
       </div>

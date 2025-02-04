@@ -6,26 +6,29 @@ const Auth = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white relative">
+      {/* Background image */}
+      <div className="absolute inset-0 z-0">
+        <img 
+          src="/lovable-uploads/ada8ee7b-6dfc-4343-a6a6-24b3a46b8179.png"
+          alt="Tactical Operator"
+          className="w-full h-full object-cover object-top"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/30" />
+      </div>
+
       {/* Back button */}
-      <button 
-        onClick={() => navigate(-1)}
-        className="p-4 text-orange-500 flex items-center gap-2 hover:text-orange-400 transition-colors"
-      >
-        <ArrowLeft className="w-6 h-6" />
-        <span className="text-lg">Atrás</span>
-      </button>
+      <div className="relative z-10">
+        <button 
+          onClick={() => navigate(-1)}
+          className="p-4 text-green-700 flex items-center gap-2 hover:text-green-600 transition-colors"
+        >
+          <ArrowLeft className="w-6 h-6" />
+          <span className="text-lg">Atrás</span>
+        </button>
+      </div>
 
-      <div className="flex flex-col items-center px-4 pt-8">
-        {/* Main image */}
-        <div className="relative w-full max-w-md mb-8">
-          <img 
-            src="/lovable-uploads/ada8ee7b-6dfc-4343-a6a6-24b3a46b8179.png"
-            alt="Tactical Operator"
-            className="w-full object-cover"
-          />
-        </div>
-
+      <div className="relative z-10 flex flex-col items-center px-4 pt-8">
         {/* Main text */}
         <h1 className="text-3xl font-bold text-center mb-12">
           Dile "Sí" a tener{' '}
@@ -84,13 +87,13 @@ const Auth = () => {
         <div className="mt-8 text-sm text-gray-400 text-center">
           <p>
             Al continuar, aceptas nuestros{' '}
-            <a href="#" className="text-orange-500 hover:underline">Términos de uso</a>
+            <a href="#" className="text-green-700 hover:underline">Términos de uso</a>
             {' '}y nuestra{' '}
-            <a href="#" className="text-orange-500 hover:underline">Política de privacidad</a>
+            <a href="#" className="text-green-700 hover:underline">Política de privacidad</a>
           </p>
           <p className="mt-2">
             ¿Necesitas ayuda?{' '}
-            <a href="#" className="text-orange-500 hover:underline">Contáctanos</a>
+            <a href="#" className="text-green-700 hover:underline">Contáctanos</a>
           </p>
         </div>
       </div>
