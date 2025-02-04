@@ -240,10 +240,6 @@ export type Database = {
   }
 }
 
-// Export the workout and difficulty types from the database enums
-export type WorkoutType = Database['public']['Enums']['workout_type'];
-export type DifficultyLevel = Database['public']['Enums']['difficulty_level'];
-
 type PublicSchema = Database[Extract<keyof Database, "public">]
 
 export type Tables<

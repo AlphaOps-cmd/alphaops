@@ -21,26 +21,50 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
   const { data: workout, isLoading, refetch } = useQuery({
     queryKey: ['workout', selectedDay, workoutType, difficulty],
     queryFn: async () => {
-      console.log('Fetching workout with params:', { selectedDay, workoutType, difficulty });
-      const date = new Date();
-      date.setDate(parseInt(selectedDay));
-      const formattedDate = date.toISOString().split('T')[0];
+      try {
+        console.log('Fetching workout with params:', { selectedDay, workoutType, difficulty });
+        const date = new Date();
+        date.setDate(parseInt(selectedDay));
+        const formattedDate = date.toISOString().split('T')[0];
 
-      // First get the base workout
-      const { data: baseWorkout, error } = await supabase
-        .from('cached_workouts')
-        .select('workout_data')
-        .eq('date', formattedDate)
-        .eq('workout_type', workoutType)
-        .maybeSingle();
+        // First get the base workout
+        const { data: baseWorkout, error } = await supabase
+          .from('cached_workouts')
+          .select('workout_data')
+          .eq('date', formattedDate)
+          .eq('workout_type', workoutType)
+          .single();
 
-      if (error) {
-        console.error('Error fetching workout:', error);
-        throw error;
-      }
-      
-      if (!baseWorkout) {
-        console.log('No workout found for:', { formattedDate, workoutType });
+        if (error) {
+          console.error('Error fetching workout:', error);
+          throw error;
+        }
+
+        if (!baseWorkout) {
+          console.log('No workout found for:', { formattedDate, workoutType });
+          return {
+            workout_sections: [
+              {
+                section_type: 'warmup',
+                content: { exercises: [] }
+              },
+              {
+                section_type: 'wod',
+                content: { type: 'rounds', rounds: 3, exercises: [] }
+              },
+              {
+                section_type: 'recovery',
+                content: 'Cool down and stretch for 5-10 minutes'
+              }
+            ]
+          };
+        }
+
+        console.log('Base workout found:', baseWorkout);
+        return baseWorkout.workout_data;
+      } catch (error) {
+        console.error('Error in workout fetch:', error);
+        // Return a default workout structure if there's an error
         return {
           workout_sections: [
             {
@@ -58,24 +82,6 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
           ]
         };
       }
-
-      console.log('Base workout found:', baseWorkout);
-
-      // If difficulty changes, adjust the workout
-      const response = await supabase.functions.invoke('adjust-workout-difficulty', {
-        body: { 
-          currentWorkout: baseWorkout.workout_data,
-          targetDifficulty: difficulty
-        }
-      });
-
-      if (response.error) {
-        console.error('Error adjusting difficulty:', response.error);
-        throw response.error;
-      }
-
-      console.log('Adjusted workout:', response.data);
-      return response.data;
     }
   });
 
@@ -110,7 +116,7 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
     }
 
     console.log('Formatting workout sections:', workout.workout_sections);
-    const sections = workout.workout_sections.reduce((acc, section) => {
+    const sections = workout.workout_sections.reduce((acc: any, section: any) => {
       acc[section.section_type] = section.content;
       return acc;
     }, {});
@@ -157,7 +163,7 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
             <section className="mt-8">
               <h2 className="text-xl font-bold mb-4">STRENGTH:</h2>
               <div className="space-y-4">
-                {currentWorkout.strength.exercises.map((exercise, index) => (
+                {currentWorkout.strength.exercises.map((exercise: any, index: number) => (
                   <div key={index} className="exercise-item">
                     <Play className="h-5 w-5 text-primary mt-1" />
                     <div>
