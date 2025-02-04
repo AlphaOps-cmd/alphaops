@@ -336,22 +336,3 @@ export type CompositeTypes<
   : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
     ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
-
-// Add these type exports at the end of the file
-export type WorkoutType = Database['public']['Enums']['workout_type']
-export type DifficultyLevel = Database['public']['Enums']['difficulty_level']
-
-// Add interface for workout data structure
-export interface WorkoutData {
-  workout_sections: Array<{
-    section_type: string;
-    content: {
-      exercises?: Array<{
-        name: string;
-        reps: string;
-      }>;
-      type?: string;
-      rounds?: number;
-    } | string;
-  }>;
-}
