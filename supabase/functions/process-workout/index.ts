@@ -18,17 +18,15 @@ serve(async (req) => {
   }
 
   try {
-    const { date, workoutType, difficulty, duration } = await req.json();
-    console.log('Fetching workout for:', { date, workoutType, difficulty, duration });
+    const { date, workoutType, difficulty } = await req.json();
+    console.log('Fetching workout for:', { date, workoutType, difficulty });
 
-    // Get cached workout using maybeSingle() instead of single()
     const { data: workout, error } = await supabase
       .from('cached_workouts')
       .select('workout_data')
       .eq('date', date)
       .eq('workout_type', workoutType)
       .eq('difficulty', difficulty)
-      .eq('duration', duration)
       .maybeSingle();
 
     if (error) {

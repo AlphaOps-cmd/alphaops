@@ -24,24 +24,11 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
       date.setDate(parseInt(selectedDay));
       const formattedDate = date.toISOString().split('T')[0];
 
-      // First get the base workout
-      const { data: baseWorkout, error } = await supabase
-        .from('cached_workouts')
-        .select('workout_data')
-        .eq('date', formattedDate)
-        .eq('workout_type', workoutType)
-        .maybeSingle();
-
-      if (error) throw error;
-      if (!baseWorkout) {
-        throw new Error('No workout found for this date');
-      }
-
-      // If difficulty changes, adjust the workout
-      const response = await supabase.functions.invoke('adjust-workout-difficulty', {
+      const response = await supabase.functions.invoke('process-workout', {
         body: { 
-          currentWorkout: baseWorkout.workout_data,
-          targetDifficulty: difficulty
+          date: formattedDate,
+          workoutType,
+          difficulty
         }
       });
 

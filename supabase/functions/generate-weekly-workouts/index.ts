@@ -13,55 +13,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const workoutTypes = ['CrossFit', 'Special Forces', 'Hyrox', 'Home Workout'];
+const workoutTypes = ['CrossFit', 'Special Forces', 'Hyrox'];
 const difficulties = ['Beginner', 'Intermediate', 'Advanced'];
-const durations = ['30 min', '45 min', '60 min'];
-
-const generateWorkoutPrompt = (date: string, workoutType: string, difficulty: string, duration: string) => {
-  return `Generate a structured ${workoutType} workout for ${date} following these guidelines:
-    1. Include warmup, strength/skill work, main workout (WOD), and recovery
-    2. Scale appropriately for ${difficulty} level
-    3. Fit within ${duration} including warmup and cooldown
-    4. Make it unique and different from other workouts
-    5. Include specific exercises, sets, reps, and time domains
-    
-    Return in this exact JSON format:
-    {
-      "workout_sections": [
-        {
-          "section_type": "warmup",
-          "content": {
-            "exercises": [
-              {"name": "exercise name", "reps": "repetitions or duration"}
-            ]
-          }
-        },
-        {
-          "section_type": "strength",
-          "content": {
-            "exercises": [
-              {"name": "exercise name", "reps": "sets and reps scheme"}
-            ]
-          }
-        },
-        {
-          "section_type": "wod",
-          "content": {
-            "type": "rounds OR amrap OR emom",
-            "rounds": "number if type is rounds",
-            "time": "duration if type is amrap or emom",
-            "exercises": [
-              {"name": "exercise name", "reps": "repetitions"}
-            ]
-          }
-        },
-        {
-          "section_type": "recovery",
-          "content": "detailed recovery instructions"
-        }
-      ]
-    }`;
-};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -86,6 +39,83 @@ serve(async (req) => {
       throw deleteError;
     }
 
+    // Your provided workout data
+    const workouts = {
+      CrossFit: {
+        // ... Your CrossFit workouts for each day
+        Monday: {
+          warmup: {
+            exercises: [
+              { name: "Trote", reps: "400m" },
+              { name: "Sentadillas aéreas", reps: "10" },
+              { name: "Flexiones", reps: "10" },
+              { name: "Remo en anillas", reps: "10" }
+            ]
+          },
+          strength: {
+            exercises: [
+              { name: "Back Squat", reps: "5x5 al 75-80% de 1RM" }
+            ]
+          },
+          wod: {
+            type: "rounds",
+            rounds: 3,
+            exercises: [
+              { name: "Thrusters", reps: "15" },
+              { name: "Pull-ups", reps: "12" },
+              { name: "Burpees", reps: "9" }
+            ]
+          },
+          recovery: "5-10 minutos de foam rolling enfocado en piernas y espalda. Estiramientos estáticos (cuádriceps, isquiotibiales y hombros)."
+        },
+        // ... Add other days similarly
+      },
+      "Special Forces": {
+        Monday: {
+          warmup: {
+            exercises: [
+              { name: "Trote suave", reps: "10 minutos" },
+              { name: "Movilidad dinámica", reps: "5 minutos" }
+            ]
+          },
+          wod: {
+            type: "rounds",
+            rounds: 4,
+            exercises: [
+              { name: "Carrera", reps: "400m" },
+              { name: "Push-ups", reps: "20" },
+              { name: "Sentadillas aéreas", reps: "20" },
+              { name: "Pull-ups", reps: "10" }
+            ]
+          },
+          recovery: "10 minutos de caminata de enfriamiento y estiramientos estáticos para pectorales y piernas."
+        },
+        // ... Add other days similarly
+      },
+      Hyrox: {
+        Monday: {
+          warmup: {
+            exercises: [
+              { name: "Remo o bicicleta estática", reps: "5 minutos" },
+              { name: "Movilidad dinámica", reps: "5 minutos" }
+            ]
+          },
+          wod: {
+            type: "rounds",
+            rounds: 3,
+            exercises: [
+              { name: "Carrera", reps: "500m" },
+              { name: "Wall Balls", reps: "15" },
+              { name: "Sled Pushes", reps: "10x25m" },
+              { name: "Burpees", reps: "15" }
+            ]
+          },
+          recovery: "5-10 minutos de trote suave y estiramientos en miembros inferiores."
+        },
+        // ... Add other days similarly
+      }
+    };
+
     for (let i = 0; i < 7; i++) {
       const date = new Date(startDate);
       date.setDate(date.getDate() + i);
@@ -94,36 +124,10 @@ serve(async (req) => {
       // Generate workouts for each combination
       for (const workoutType of workoutTypes) {
         for (const difficulty of difficulties) {
-          for (const duration of durations) {
-            console.log(`Generating workout for ${formattedDate}, ${workoutType}, ${difficulty}, ${duration}`);
+          const dayOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
+          const workout = workouts[workoutType][dayOfWeek];
 
-            const prompt = generateWorkoutPrompt(formattedDate, workoutType, difficulty, duration);
-            
-            const response = await fetch('https://api.openai.com/v1/chat/completions', {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${openAIApiKey}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                model: 'gpt-4o-mini',
-                messages: [
-                  { 
-                    role: 'system', 
-                    content: 'You are an expert fitness coach specializing in creating structured workouts. Always respond with valid JSON matching the exact structure requested.' 
-                  },
-                  { role: 'user', content: prompt }
-                ],
-              }),
-            });
-
-            if (!response.ok) {
-              throw new Error(`OpenAI API error: ${await response.text()}`);
-            }
-
-            const aiResponse = await response.json();
-            const workoutData = JSON.parse(aiResponse.choices[0].message.content);
-
+          if (workout) {
             promises.push(
               supabase
                 .from('cached_workouts')
@@ -131,13 +135,28 @@ serve(async (req) => {
                   date: formattedDate,
                   workout_type: workoutType,
                   difficulty: difficulty,
-                  duration: duration,
-                  workout_data: workoutData
+                  workout_data: {
+                    workout_sections: [
+                      {
+                        section_type: "warmup",
+                        content: workout.warmup
+                      },
+                      workout.strength && {
+                        section_type: "strength",
+                        content: workout.strength
+                      },
+                      {
+                        section_type: "wod",
+                        content: workout.wod
+                      },
+                      {
+                        section_type: "recovery",
+                        content: workout.recovery
+                      }
+                    ].filter(Boolean)
+                  }
                 })
             );
-
-            // Add a small delay to avoid rate limiting
-            await new Promise(resolve => setTimeout(resolve, 500));
           }
         }
       }
