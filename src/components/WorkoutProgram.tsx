@@ -187,3 +187,5 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
     </div>
   );
 };
+
+export default WorkoutProgram;
