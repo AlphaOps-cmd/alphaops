@@ -3,14 +3,14 @@ import { Button } from './ui/button';
 import { Slash, Dumbbell } from 'lucide-react';
 
 interface WorkoutSelectorProps {
-  workoutType: string;
-  difficulty: string;
-  onWorkoutTypeChange: (type: string) => void;
-  onDifficultyChange: (difficulty: string) => void;
+  workoutType: 'CrossFit' | 'Special Forces' | 'Hyrox';
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  onWorkoutTypeChange: (type: 'CrossFit' | 'Special Forces' | 'Hyrox') => void;
+  onDifficultyChange: (difficulty: 'Beginner' | 'Intermediate' | 'Advanced') => void;
 }
 
-const workoutTypes = ['CrossFit', 'Special Forces', 'Hyrox'];
-const difficulties = ['Beginner', 'Intermediate', 'Advanced'];
+const workoutTypes = ['CrossFit', 'Special Forces', 'Hyrox'] as const;
+const difficulties = ['Beginner', 'Intermediate', 'Advanced'] as const;
 
 const WorkoutSelector = ({
   workoutType,
@@ -18,7 +18,7 @@ const WorkoutSelector = ({
   onWorkoutTypeChange,
   onDifficultyChange,
 }: WorkoutSelectorProps) => {
-  const cycleValue = (current: string, options: string[]) => {
+  const cycleValue = <T extends string>(current: T, options: readonly T[]): T => {
     const currentIndex = options.indexOf(current);
     const nextIndex = (currentIndex + 1) % options.length;
     return options[nextIndex];

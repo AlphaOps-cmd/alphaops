@@ -13,8 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
   const { toast } = useToast();
   const [showTimer, setShowTimer] = useState(false);
-  const [workoutType, setWorkoutType] = useState('CrossFit');
-  const [difficulty, setDifficulty] = useState('Intermediate');
+  const [workoutType, setWorkoutType] = useState<'CrossFit' | 'Special Forces' | 'Hyrox'>('CrossFit');
+  const [difficulty, setDifficulty] = useState<'Beginner' | 'Intermediate' | 'Advanced'>('Intermediate');
 
   // Fetch workout from database
   const { data: workout, isLoading, refetch } = useQuery({
@@ -50,7 +50,7 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
     }
   });
 
-  const handleDifficultyChange = async (newDifficulty: string) => {
+  const handleDifficultyChange = async (newDifficulty: 'Beginner' | 'Intermediate' | 'Advanced') => {
     setDifficulty(newDifficulty);
     toast({
       title: "Adjusting workout difficulty",
