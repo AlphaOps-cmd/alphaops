@@ -9,7 +9,7 @@ import WorkoutRecovery from './WorkoutRecovery';
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from '@tanstack/react-query';
 import { useToast } from "@/hooks/use-toast";
-import type { WorkoutType, DifficultyLevel } from '@/integrations/supabase/types';
+import type { WorkoutType, DifficultyLevel, WorkoutData } from '@/integrations/supabase/types';
 
 const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
   const { toast } = useToast();
@@ -17,7 +17,6 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
   const [workoutType, setWorkoutType] = useState<WorkoutType>('CrossFit');
   const [difficulty, setDifficulty] = useState<DifficultyLevel>('Intermediate');
 
-  // Fetch workout from database
   const { data: workout, isLoading, refetch } = useQuery({
     queryKey: ['workout', selectedDay, workoutType, difficulty],
     queryFn: async () => {
@@ -27,13 +26,12 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
         date.setDate(parseInt(selectedDay));
         const formattedDate = date.toISOString().split('T')[0];
 
-        // First get the base workout
         const { data: baseWorkout, error } = await supabase
           .from('cached_workouts')
           .select('workout_data')
           .eq('date', formattedDate)
           .eq('workout_type', workoutType)
-          .single();
+          .maybeSingle();
 
         if (error) {
           console.error('Error fetching workout:', error);
@@ -57,14 +55,13 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
                 content: 'Cool down and stretch for 5-10 minutes'
               }
             ]
-          };
+          } as WorkoutData;
         }
 
         console.log('Base workout found:', baseWorkout);
-        return baseWorkout.workout_data;
+        return baseWorkout.workout_data as WorkoutData;
       } catch (error) {
         console.error('Error in workout fetch:', error);
-        // Return a default workout structure if there's an error
         return {
           workout_sections: [
             {
@@ -80,7 +77,7 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
               content: 'Cool down and stretch for 5-10 minutes'
             }
           ]
-        };
+        } as WorkoutData;
       }
     }
   });
@@ -103,7 +100,6 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
     await refetch();
   };
 
-  // Format workout sections for display
   const formatWorkoutSections = () => {
     if (!workout?.workout_sections) {
       console.log('No workout sections found');
@@ -191,5 +187,3 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
     </div>
   );
 };
-
-export default WorkoutProgram;
