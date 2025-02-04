@@ -16,6 +16,28 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
   const [workoutType, setWorkoutType] = useState<'CrossFit' | 'Special Forces' | 'Hyrox'>('CrossFit');
   const [difficulty, setDifficulty] = useState<'Beginner' | 'Intermediate' | 'Advanced'>('Intermediate');
 
+  const generateWorkouts = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-weekly-workouts');
+      if (error) throw error;
+      
+      toast({
+        title: "Workouts Generated",
+        description: "Weekly workouts have been successfully generated.",
+      });
+      
+      // Refetch workouts after generation
+      await refetch();
+    } catch (error) {
+      console.error('Error generating workouts:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate workouts. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Fetch workout from database
   const { data: workout, isLoading, refetch } = useQuery({
     queryKey: ['workout', selectedDay, workoutType, difficulty],
@@ -83,6 +105,15 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
       <div className="flex-1">
         <h1 className="text-2xl font-bold text-center">TODAY'S WORKOUT</h1>
         <p className="text-muted-foreground text-center mb-4">Week 3</p>
+        <div className="flex justify-center mb-4">
+          <Button 
+            variant="outline"
+            onClick={generateWorkouts}
+            className="text-sm"
+          >
+            Generate Weekly Workouts
+          </Button>
+        </div>
         <WorkoutSelector
           workoutType={workoutType}
           difficulty={difficulty}
