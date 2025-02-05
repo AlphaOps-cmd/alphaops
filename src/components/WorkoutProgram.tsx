@@ -68,29 +68,33 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
     await refetch();
   };
 
-  // Format workout sections for display
+  // Format workout sections for display with proper null checks
   const formatWorkoutSections = () => {
-    if (!workout?.workout_sections) return null;
+    if (!workout?.workout_sections) {
+      return {
+        warmup: [],
+        workout: { type: 'rounds', rounds: 3, exercises: [] },
+        recovery: '',
+        strength: null
+      };
+    }
 
     const sections = workout.workout_sections.reduce((acc, section) => {
-      acc[section.section_type] = section.content;
+      if (section && section.section_type && section.content) {
+        acc[section.section_type] = section.content;
+      }
       return acc;
-    }, {});
+    }, {} as any);
 
     return {
       warmup: sections.warmup?.exercises || [],
       workout: sections.wod || { type: 'rounds', rounds: 3, exercises: [] },
       recovery: sections.recovery || '',
-      strength: sections.strength
+      strength: sections.strength || null
     };
   };
 
-  const currentWorkout = formatWorkoutSections() || {
-    warmup: [],
-    workout: { type: 'rounds', rounds: 3, exercises: [] },
-    recovery: '',
-    strength: null
-  };
+  const currentWorkout = formatWorkoutSections();
 
   if (showTimer) {
     return <WorkoutTimer 
@@ -133,7 +137,7 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
             <section className="mt-8">
               <h2 className="text-xl font-bold mb-4">STRENGTH:</h2>
               <div className="space-y-4">
-                {currentWorkout.strength.exercises.map((exercise, index) => (
+                {currentWorkout.strength.exercises?.map((exercise, index) => (
                   <div key={index} className="exercise-item">
                     <Play className="h-5 w-5 text-primary mt-1" />
                     <div>
