@@ -4,7 +4,7 @@ import WorkoutProgram from '@/components/WorkoutProgram';
 import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 
-const Index = () => {
+const Home = () => {
   const [selectedDay, setSelectedDay] = useState('24');
 
   return (
@@ -17,4 +17,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Home;
