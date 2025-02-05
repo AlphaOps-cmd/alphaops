@@ -16,16 +16,19 @@ interface WorkoutMainProps {
 }
 
 const WorkoutMain = ({ workout }: WorkoutMainProps) => {
+  // Ensure exercises is always an array, even if undefined
+  const exercises = workout?.exercises || [];
+
   return (
     <section className="mt-8">
       <h2 className="text-xl font-bold mb-4">WORKOUT:</h2>
-      {workout.type === 'rounds' ? (
+      {workout?.type === 'rounds' ? (
         <p className="text-muted-foreground mb-4">Complete {workout.rounds} rounds of:</p>
       ) : (
         <p className="text-muted-foreground mb-4">For time:</p>
       )}
       <div className="space-y-4">
-        {workout.exercises.map((exercise, index) => (
+        {exercises.map((exercise, index) => (
           <div key={index} className="exercise-item">
             <Play className="h-5 w-5 text-primary mt-1" />
             <div>
