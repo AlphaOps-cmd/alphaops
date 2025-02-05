@@ -22,6 +22,11 @@ const Landing = () => {
       </div>
       
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-end pb-16 px-4">
+        {/* Index Label */}
+        <div className="absolute top-8 left-1/2 transform -translate-x-1/2">
+          <h1 className="text-4xl font-bold">Index</h1>
+        </div>
+
         {/* Text */}
         <h1 className="text-4xl font-bold mb-2">Ganar músculo</h1>
         <h2 className="text-4xl font-bold mb-8 text-blue-600">Perder peso</h2>

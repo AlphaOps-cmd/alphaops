@@ -26,7 +26,6 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
         description: "Weekly workouts have been successfully generated.",
       });
       
-      // Refetch workouts after generation
       await refetch();
     } catch (error) {
       console.error('Error generating workouts:', error);
@@ -38,7 +37,6 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
     }
   };
 
-  // Fetch workout from database
   const { data: workout, isLoading, refetch } = useQuery({
     queryKey: ['workout', selectedDay, workoutType, difficulty],
     queryFn: async () => {
@@ -68,7 +66,6 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
     await refetch();
   };
 
-  // Format workout sections for display with proper null checks
   const formatWorkoutSections = () => {
     if (!workout?.workout_sections) {
       return {
