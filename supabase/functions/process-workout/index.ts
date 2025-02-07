@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
@@ -13,21 +14,19 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { date, workoutType, difficulty } = await req.json();
-    console.log('Fetching workout for:', { date, workoutType, difficulty });
+    const { date } = await req.json();
+    console.log('Fetching workout for:', { date });
 
     const { data: workout, error } = await supabase
       .from('cached_workouts')
       .select('workout_data')
       .eq('date', date)
-      .eq('workout_type', workoutType)
-      .eq('difficulty', difficulty)
+      .eq('workout_type', 'Hybrid Functional')
       .maybeSingle();
 
     if (error) {

@@ -13,7 +13,6 @@ export type Database = {
         Row: {
           created_at: string | null
           date: string
-          difficulty: Database["public"]["Enums"]["difficulty_level"]
           id: number
           workout_data: Json
           workout_type: Database["public"]["Enums"]["workout_type"]
@@ -21,15 +20,13 @@ export type Database = {
         Insert: {
           created_at?: string | null
           date: string
-          difficulty: Database["public"]["Enums"]["difficulty_level"]
           id?: never
           workout_data: Json
-          workout_type: Database["public"]["Enums"]["workout_type"]
+          workout_type?: Database["public"]["Enums"]["workout_type"]
         }
         Update: {
           created_at?: string | null
           date?: string
-          difficulty?: Database["public"]["Enums"]["difficulty_level"]
           id?: never
           workout_data?: Json
           workout_type?: Database["public"]["Enums"]["workout_type"]
@@ -45,7 +42,7 @@ export type Database = {
     }
     Enums: {
       difficulty_level: "Beginner" | "Intermediate" | "Advanced"
-      workout_type: "CrossFit" | "Special Forces" | "Hyrox"
+      workout_type: "Hybrid Functional"
     }
     CompositeTypes: {
       [_ in never]: never

@@ -1,6 +1,5 @@
+
 import React, { useState } from 'react';
-import { Play } from 'lucide-react';
-import { Button } from './ui/button';
 import WorkoutTimer from './WorkoutTimer';
 import WorkoutSelector from './WorkoutSelector';
 import WorkoutWarmup from './WorkoutWarmup';
@@ -8,37 +7,13 @@ import WorkoutMain from './WorkoutMain';
 import WorkoutRecovery from './WorkoutRecovery';
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from '@tanstack/react-query';
-import { useToast } from "@/hooks/use-toast";
+import { Button } from './ui/button';
 
 const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
-  const { toast } = useToast();
   const [showTimer, setShowTimer] = useState(false);
-  const [workoutType, setWorkoutType] = useState<'CrossFit' | 'Special Forces' | 'Hyrox'>('CrossFit');
-  const [difficulty, setDifficulty] = useState<'Beginner' | 'Intermediate' | 'Advanced'>('Intermediate');
 
-  const generateWorkouts = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('generate-weekly-workouts');
-      if (error) throw error;
-      
-      toast({
-        title: "Workouts Generated",
-        description: "Weekly workouts have been successfully generated.",
-      });
-      
-      await refetch();
-    } catch (error) {
-      console.error('Error generating workouts:', error);
-      toast({
-        title: "Error",
-        description: "Failed to generate workouts. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const { data: workout, isLoading, refetch } = useQuery({
-    queryKey: ['workout', selectedDay, workoutType, difficulty],
+  const { data: workout, isLoading } = useQuery({
+    queryKey: ['workout', selectedDay],
     queryFn: async () => {
       const date = new Date();
       date.setDate(parseInt(selectedDay));
@@ -47,8 +22,7 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
       const response = await supabase.functions.invoke('process-workout', {
         body: { 
           date: formattedDate,
-          workoutType,
-          difficulty
+          workoutType: 'Hybrid Functional'
         }
       });
 
@@ -56,15 +30,6 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
       return response.data;
     }
   });
-
-  const handleDifficultyChange = async (newDifficulty: 'Beginner' | 'Intermediate' | 'Advanced') => {
-    setDifficulty(newDifficulty);
-    toast({
-      title: "Adjusting workout difficulty",
-      description: "Modifying the workout for " + newDifficulty + " level",
-    });
-    await refetch();
-  };
 
   const formatWorkoutSections = () => {
     if (!workout?.workout_sections) {
@@ -106,21 +71,7 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
       <div className="flex-1">
         <h1 className="text-2xl font-bold text-center">TODAY'S WORKOUT</h1>
         <p className="text-muted-foreground text-center mb-4">Week 3</p>
-        <div className="flex justify-center mb-4">
-          <Button 
-            variant="outline"
-            onClick={generateWorkouts}
-            className="text-sm"
-          >
-            Generate Weekly Workouts
-          </Button>
-        </div>
-        <WorkoutSelector
-          workoutType={workoutType}
-          difficulty={difficulty}
-          onWorkoutTypeChange={setWorkoutType}
-          onDifficultyChange={handleDifficultyChange}
-        />
+        <WorkoutSelector />
       </div>
 
       {isLoading ? (
