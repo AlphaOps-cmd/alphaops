@@ -11,38 +11,26 @@ export type Database = {
     Tables: {
       cached_workouts: {
         Row: {
-          "cool down": string | null
-          cool_down: string | null
           created_at: string | null
           date: string
           difficulty: Database["public"]["Enums"]["difficulty_level"]
           id: number
-          "warm up": string | null
-          warm_up: string | null
           workout_data: Json
           workout_type: Database["public"]["Enums"]["workout_type"]
         }
         Insert: {
-          "cool down"?: string | null
-          cool_down?: string | null
           created_at?: string | null
           date: string
           difficulty: Database["public"]["Enums"]["difficulty_level"]
           id?: never
-          "warm up"?: string | null
-          warm_up?: string | null
           workout_data: Json
           workout_type: Database["public"]["Enums"]["workout_type"]
         }
         Update: {
-          "cool down"?: string | null
-          cool_down?: string | null
           created_at?: string | null
           date?: string
           difficulty?: Database["public"]["Enums"]["difficulty_level"]
           id?: never
-          "warm up"?: string | null
-          warm_up?: string | null
           workout_data?: Json
           workout_type?: Database["public"]["Enums"]["workout_type"]
         }

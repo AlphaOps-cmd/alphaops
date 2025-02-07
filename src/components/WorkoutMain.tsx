@@ -1,4 +1,4 @@
-import { Play } from 'lucide-react';
+import { Dumbbell } from 'lucide-react';
 
 interface Exercise {
   name: string;
@@ -16,24 +16,30 @@ interface WorkoutMainProps {
 }
 
 const WorkoutMain = ({ workout }: WorkoutMainProps) => {
-  // Ensure exercises is always an array, even if undefined
   const exercises = workout?.exercises || [];
 
   return (
-    <section className="mt-8">
-      <h2 className="text-xl font-bold mb-4">WORKOUT:</h2>
+    <section className="mt-8 bg-card rounded-lg p-6">
+      <div className="flex items-center gap-2 mb-4">
+        <Dumbbell className="h-6 w-6 text-primary" />
+        <h2 className="text-xl font-bold">WORKOUT</h2>
+      </div>
+      
       {workout?.type === 'rounds' ? (
-        <p className="text-muted-foreground mb-4">Complete {workout.rounds} rounds of:</p>
+        <p className="text-muted-foreground mb-4 ml-4">
+          Complete {workout.rounds} rounds of:
+        </p>
       ) : (
-        <p className="text-muted-foreground mb-4">For time:</p>
+        <p className="text-muted-foreground mb-4 ml-4">For time:</p>
       )}
-      <div className="space-y-4">
+
+      <div className="space-y-3 ml-4">
         {exercises.map((exercise, index) => (
-          <div key={index} className="exercise-item">
-            <Play className="h-5 w-5 text-primary mt-1" />
+          <div key={index} className="flex items-start gap-2">
+            <span className="text-primary">•</span>
             <div>
-              <h3 className="font-semibold">{exercise.name}</h3>
-              <p className="text-muted-foreground">- {exercise.reps}</p>
+              <span className="font-medium">{exercise.name}</span>
+              <span className="text-muted-foreground"> - {exercise.reps}</span>
             </div>
           </div>
         ))}
