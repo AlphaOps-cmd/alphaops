@@ -14,7 +14,8 @@ const WorkoutRecovery = ({ recovery }: WorkoutRecoveryProps) => {
     "Estiramientos de hombros y espalda - 2 minutos"
   ].join('\n');
 
-  const recoveryText = recovery || defaultRecovery;
+  // Ensure recoveryText is always a string
+  const recoveryText = (recovery || defaultRecovery).toString();
 
   return (
     <section className="mt-8 bg-card rounded-lg p-6">
