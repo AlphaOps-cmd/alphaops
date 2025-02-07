@@ -2,7 +2,7 @@
 import { Activity } from 'lucide-react';
 
 interface WorkoutRecoveryProps {
-  recovery: string;
+  recovery: string | null | undefined;
 }
 
 const WorkoutRecovery = ({ recovery }: WorkoutRecoveryProps) => {
@@ -12,10 +12,12 @@ const WorkoutRecovery = ({ recovery }: WorkoutRecoveryProps) => {
     "Foam rolling para cuádriceps y pantorrillas - 1 minuto por grupo",
     "Ejercicios de respiración profunda - 2 minutos",
     "Estiramientos de hombros y espalda - 2 minutos"
-  ].join('\n');
+  ];
 
-  // Ensure recoveryText is always a string
-  const recoveryText = (recovery || defaultRecovery).toString();
+  // Check if recovery is null, undefined, or empty and use default if needed
+  const recoveryLines = recovery ? 
+    (typeof recovery === 'string' ? recovery.split('\n') : defaultRecovery) : 
+    defaultRecovery;
 
   return (
     <section className="mt-8 bg-card rounded-lg p-6">
@@ -24,7 +26,7 @@ const WorkoutRecovery = ({ recovery }: WorkoutRecoveryProps) => {
         <h2 className="text-xl font-bold">COOL DOWN & RECOVERY</h2>
       </div>
       <div className="space-y-3 ml-4">
-        {recoveryText.split('\n').map((instruction, index) => (
+        {recoveryLines.map((instruction, index) => (
           instruction.trim() && (
             <div key={index} className="flex items-start gap-2">
               <span className="text-primary">•</span>
