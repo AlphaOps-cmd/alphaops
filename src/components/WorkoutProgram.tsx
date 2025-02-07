@@ -86,8 +86,7 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
               <h2 className="text-xl font-bold mb-4">STRENGTH:</h2>
               <div className="space-y-4">
                 {currentWorkout.strength.exercises?.map((exercise, index) => (
-                  <div key={index} className="exercise-item">
-                    <Play className="h-5 w-5 text-primary mt-1" />
+                  <div key={index} className="flex items-start gap-2">
                     <div>
                       <h3 className="font-semibold">{exercise.name}</h3>
                       <p className="text-muted-foreground">- {exercise.reps}</p>

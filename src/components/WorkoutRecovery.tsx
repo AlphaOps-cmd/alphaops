@@ -1,3 +1,4 @@
+
 import { Activity } from 'lucide-react';
 
 interface WorkoutRecoveryProps {
@@ -6,7 +7,7 @@ interface WorkoutRecoveryProps {
 
 const WorkoutRecovery = ({ recovery }: WorkoutRecoveryProps) => {
   const defaultRecovery = "Estiramientos estáticos - 5 minutos\nFoam rolling - 5 minutos";
-  const recoveryText = recovery || defaultRecovery;
+  const recoveryText = String(recovery || defaultRecovery);
 
   return (
     <section className="mt-8 bg-card rounded-lg p-6">
