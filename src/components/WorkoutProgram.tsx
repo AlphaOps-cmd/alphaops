@@ -8,14 +8,22 @@ import WorkoutRecovery from './WorkoutRecovery';
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from '@tanstack/react-query';
 import { Button } from './ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
   const [showTimer, setShowTimer] = useState(false);
+  const navigate = useNavigate();
 
-  const { data: workout, isLoading } = useQuery({
+  const { data: workout, isLoading, error } = useQuery({
     queryKey: ['workout', selectedDay],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        navigate('/auth');
+        throw new Error('Authentication required');
+      }
+
       const date = new Date();
       date.setDate(parseInt(selectedDay));
       const formattedDate = date.toISOString().split('T')[0];
@@ -24,7 +32,7 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
         body: { 
           date: formattedDate,
           workoutType: 'Hybrid Functional',
-          userId: user?.id
+          userId: user.id
         }
       });
 
@@ -66,6 +74,17 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
       warmup={currentWorkout.warmup}
       workout={currentWorkout.workout}
     />;
+  }
+
+  if (error) {
+    if (error.message === 'Authentication required') {
+      return null; // Navigation will handle this case
+    }
+    return (
+      <div className="flex justify-center items-center py-8">
+        <p className="text-red-500">Failed to load workout. Please try again later.</p>
+      </div>
+    );
   }
 
   return (
