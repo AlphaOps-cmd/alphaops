@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import WorkoutTimer from './WorkoutTimer';
 import WorkoutSelector from './WorkoutSelector';
 import WorkoutWarmup from './WorkoutWarmup';
@@ -9,17 +9,41 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from '@tanstack/react-query';
 import { Button } from './ui/button';
 import { useNavigate } from 'react-router-dom';
+import { toast } from './ui/use-toast';
 
 const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
   const [showTimer, setShowTimer] = useState(false);
   const navigate = useNavigate();
 
+  // Check authentication on component mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error || !session) {
+        navigate('/auth');
+      }
+    };
+
+    checkAuth();
+
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        navigate('/auth');
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
+
   const { data: workout, isLoading, error } = useQuery({
     queryKey: ['workout', selectedDay],
     queryFn: async () => {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      const { data: { session }, error: authError } = await supabase.auth.getSession();
       
-      if (authError || !user) {
+      if (authError || !session) {
         navigate('/auth');
         throw new Error('Authentication required');
       }
@@ -32,13 +56,22 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
         body: { 
           date: formattedDate,
           workoutType: 'Hybrid Functional',
-          userId: user.id
+          userId: session.user.id
         }
       });
 
-      if (response.error) throw response.error;
+      if (response.error) {
+        toast({
+          variant: "destructive",
+          title: "Error loading workout",
+          description: response.error.message || "Failed to load workout"
+        });
+        throw response.error;
+      }
+
       return response.data;
-    }
+    },
+    retry: false
   });
 
   const formatWorkoutSections = () => {
