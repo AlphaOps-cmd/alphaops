@@ -1,4 +1,4 @@
-import { Yoga } from 'lucide-react';
+import { Activity } from 'lucide-react';
 
 interface WorkoutRecoveryProps {
   recovery: string;
@@ -11,7 +11,7 @@ const WorkoutRecovery = ({ recovery }: WorkoutRecoveryProps) => {
   return (
     <section className="mt-8 bg-card rounded-lg p-6">
       <div className="flex items-center gap-2 mb-4">
-        <Yoga className="h-6 w-6 text-primary" />
+        <Activity className="h-6 w-6 text-primary" />
         <h2 className="text-xl font-bold">COOL DOWN & RECOVERY</h2>
       </div>
       <div className="space-y-3 ml-4">
