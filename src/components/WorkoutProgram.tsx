@@ -15,6 +15,7 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
   const { data: workout, isLoading } = useQuery({
     queryKey: ['workout', selectedDay],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
       const date = new Date();
       date.setDate(parseInt(selectedDay));
       const formattedDate = date.toISOString().split('T')[0];
@@ -22,7 +23,8 @@ const WorkoutProgram = ({ selectedDay = '24' }: { selectedDay?: string }) => {
       const response = await supabase.functions.invoke('process-workout', {
         body: { 
           date: formattedDate,
-          workoutType: 'Hybrid Functional'
+          workoutType: 'Hybrid Functional',
+          userId: user?.id
         }
       });
 
