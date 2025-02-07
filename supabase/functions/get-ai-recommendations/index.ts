@@ -41,11 +41,14 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a fitness coach that analyzes workout data and provides personalized recommendations. Generate 4 recommendations based on the user\'s recent workouts. Each recommendation should include a type (strength, recovery, training, nutrition), an emoji icon, a message, and a color (border-red-500, border-blue-500, border-green-500, or border-yellow-500).'
+            content: `You are a hybrid training fitness coach specializing in functional fitness and mixed training modalities. 
+            Analyze workout data and provide 4 personalized recommendations focused on improving hybrid training performance. 
+            Each recommendation should target different aspects: strength, conditioning, skill development, and recovery.
+            Consider recent workout patterns, frequency, and intensity to provide adaptive recommendations.`
           },
           {
             role: 'user',
-            content: `Based on these recent workouts, generate 4 recommendations: ${JSON.stringify(workouts)}`
+            content: `Based on these recent workouts, generate 4 specific hybrid training recommendations: ${JSON.stringify(workouts)}`
           }
         ],
       }),
@@ -56,32 +59,46 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const recommendations = [
+    const aiResponse = data.choices[0].message.content;
+
+    // Fallback recommendations in case of parsing issues
+    let recommendations = [
       {
         type: 'strength',
         icon: '💪',
-        message: 'Focus on compound movements today to maximize strength gains',
+        message: 'Incorporate compound movements like thrusters and clean & jerks in your next session',
         color: 'border-blue-500'
+      },
+      {
+        type: 'conditioning',
+        icon: '🏃‍♂️',
+        message: 'Add 2-3 short EMOMs to your strength work for better hybrid conditioning',
+        color: 'border-red-500'
+      },
+      {
+        type: 'skill',
+        icon: '🎯',
+        message: 'Practice Olympic lifting technique with light weights for better movement patterns',
+        color: 'border-yellow-500'
       },
       {
         type: 'recovery',
         icon: '🧘‍♂️',
-        message: 'Take time for mobility work and stretching',
+        message: 'Include mobility work focusing on shoulders and hips for better movement quality',
         color: 'border-green-500'
-      },
-      {
-        type: 'training',
-        icon: '🎯',
-        message: 'Increase intensity in your HIIT sessions',
-        color: 'border-red-500'
-      },
-      {
-        type: 'nutrition',
-        icon: '🥗',
-        message: 'Ensure adequate protein intake for muscle recovery',
-        color: 'border-yellow-500'
       }
     ];
+
+    try {
+      // Try to parse AI response if it's in a valid format
+      const parsedRecommendations = JSON.parse(aiResponse);
+      if (Array.isArray(parsedRecommendations) && parsedRecommendations.length === 4) {
+        recommendations = parsedRecommendations;
+      }
+    } catch (parseError) {
+      console.error('Error parsing AI recommendations:', parseError);
+      // Use fallback recommendations defined above
+    }
 
     console.log('AI recommendations generated successfully');
 
