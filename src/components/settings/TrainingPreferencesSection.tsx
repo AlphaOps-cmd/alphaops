@@ -1,3 +1,4 @@
+
 import { Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -5,20 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 export const TrainingPreferencesSection = () => {
   const { toast } = useToast();
   const [monthlyGoal, setMonthlyGoal] = useState("15");
-  const [workoutType, setWorkoutType] = useState("CrossFit");
-  const [difficulty, setDifficulty] = useState("intermediate");
-  const [workoutDuration, setWorkoutDuration] = useState("45");
   const [trainingDays, setTrainingDays] = useState({
     monday: true,
     tuesday: true,
@@ -37,14 +28,6 @@ export const TrainingPreferencesSection = () => {
     toast({
       title: "Training schedule updated",
       description: "Your training schedule has been updated successfully.",
-    });
-  };
-
-  const handleMonthlyGoalChange = (value: string) => {
-    setMonthlyGoal(value);
-    toast({
-      title: "Monthly goal updated",
-      description: `Your monthly training goal has been set to ${value} workouts`,
     });
   };
 
@@ -73,84 +56,18 @@ export const TrainingPreferencesSection = () => {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>Workout Type</Label>
-            <Select
-              value={workoutType}
-              onValueChange={(value) => {
-                setWorkoutType(value);
-                toast({
-                  title: "Workout type updated",
-                  description: `Your workout type has been set to ${value}`,
-                });
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select workout type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="CrossFit">CrossFit</SelectItem>
-                <SelectItem value="Special Forces">Special Forces</SelectItem>
-                <SelectItem value="Hyrox">Hyrox</SelectItem>
-                <SelectItem value="Home Workout">Home Workout</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Difficulty Level</Label>
-            <Select
-              value={difficulty}
-              onValueChange={(value) => {
-                setDifficulty(value);
-                toast({
-                  title: "Difficulty updated",
-                  description: `Your training difficulty has been set to ${value}`,
-                });
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select difficulty" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="beginner">Beginner</SelectItem>
-                <SelectItem value="intermediate">Intermediate</SelectItem>
-                <SelectItem value="advanced">Advanced</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Workout Duration</Label>
-            <Select
-              value={workoutDuration}
-              onValueChange={(value) => {
-                setWorkoutDuration(value);
-                toast({
-                  title: "Workout duration updated",
-                  description: `Your workout duration has been set to ${value} minutes`,
-                });
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select duration" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="30">30 minutes</SelectItem>
-                <SelectItem value="45">45 minutes</SelectItem>
-                <SelectItem value="60">60 minutes</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
         <div className="space-y-2">
           <Label>Monthly Training Goal</Label>
           <Input
             type="number"
             value={monthlyGoal}
-            onChange={(e) => handleMonthlyGoalChange(e.target.value)}
+            onChange={(e) => {
+              setMonthlyGoal(e.target.value);
+              toast({
+                title: "Monthly goal updated",
+                description: `Your monthly training goal has been set to ${e.target.value} workouts`,
+              });
+            }}
             min="1"
             max="31"
             placeholder="Enter number of workouts"

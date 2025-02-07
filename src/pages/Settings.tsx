@@ -1,3 +1,4 @@
+
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -24,7 +25,7 @@ const Settings = () => {
   return (
     <div className="min-h-screen bg-background text-foreground pb-20">
       <button 
-        onClick={() => navigate('/')} 
+        onClick={() => navigate('/home')} 
         className="fixed top-4 left-4 p-2 text-muted-foreground hover:text-foreground z-50"
       >
         <ArrowLeft className="h-6 w-6" />

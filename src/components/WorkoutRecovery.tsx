@@ -7,7 +7,7 @@ interface WorkoutRecoveryProps {
 
 const WorkoutRecovery = ({ recovery }: WorkoutRecoveryProps) => {
   const defaultRecovery = "Estiramientos estáticos - 5 minutos\nFoam rolling - 5 minutos";
-  const recoveryText = String(recovery || defaultRecovery);
+  const recoveryText = (recovery || defaultRecovery).toString();
 
   return (
     <section className="mt-8 bg-card rounded-lg p-6">
