@@ -35,30 +35,142 @@ export type Database = {
       }
       personal_records: {
         Row: {
-          created_at: string | null
+          created_at: string
+          date: string
+          exercise_category: string
+          exercise_id: string
           exercise_name: string
-          id: number
-          one_rm: number | null
-          updated_at: string | null
+          id: string
+          notes: string | null
+          updated_at: string
           user_id: string | null
+          weight: number
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
+          date?: string
+          exercise_category: string
+          exercise_id: string
           exercise_name: string
-          id?: number
-          one_rm?: number | null
-          updated_at?: string | null
+          id?: string
+          notes?: string | null
+          updated_at?: string
           user_id?: string | null
+          weight: number
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
+          date?: string
+          exercise_category?: string
+          exercise_id?: string
           exercise_name?: string
-          id?: number
-          one_rm?: number | null
-          updated_at?: string | null
+          id?: string
+          notes?: string | null
+          updated_at?: string
           user_id?: string | null
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personal_records_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          body_weight: number | null
+          completed_workouts: number | null
+          consistency: number | null
+          created_at: string
+          email: string
+          id: string
+          membership: string
+          monthly_goal: number | null
+          name: string | null
+          profile_image_url: string | null
+          streak: number | null
+          updated_at: string
+        }
+        Insert: {
+          body_weight?: number | null
+          completed_workouts?: number | null
+          consistency?: number | null
+          created_at?: string
+          email: string
+          id: string
+          membership?: string
+          monthly_goal?: number | null
+          name?: string | null
+          profile_image_url?: string | null
+          streak?: number | null
+          updated_at?: string
+        }
+        Update: {
+          body_weight?: number | null
+          completed_workouts?: number | null
+          consistency?: number | null
+          created_at?: string
+          email?: string
+          id?: string
+          membership?: string
+          monthly_goal?: number | null
+          name?: string | null
+          profile_image_url?: string | null
+          streak?: number | null
+          updated_at?: string
         }
         Relationships: []
+      }
+      training_preferences: {
+        Row: {
+          created_at: string
+          dark_mode: boolean | null
+          haptic_feedback: boolean | null
+          id: string
+          language: string | null
+          monthly_progress: boolean | null
+          training_days: string[]
+          training_reminders: boolean | null
+          unit_system: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dark_mode?: boolean | null
+          haptic_feedback?: boolean | null
+          id: string
+          language?: string | null
+          monthly_progress?: boolean | null
+          training_days?: string[]
+          training_reminders?: boolean | null
+          unit_system?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dark_mode?: boolean | null
+          haptic_feedback?: boolean | null
+          id?: string
+          language?: string | null
+          monthly_progress?: boolean | null
+          training_days?: string[]
+          training_reminders?: boolean | null
+          unit_system?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_preferences_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -80,6 +192,59 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      workouts: {
+        Row: {
+          completed_exercises: string[] | null
+          created_at: string
+          date: string
+          duration: number
+          id: string
+          intensity: number
+          notes: string | null
+          perceived_difficulty: number | null
+          sections: Json
+          type: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          completed_exercises?: string[] | null
+          created_at?: string
+          date?: string
+          duration?: number
+          id?: string
+          intensity: number
+          notes?: string | null
+          perceived_difficulty?: number | null
+          sections: Json
+          type: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          completed_exercises?: string[] | null
+          created_at?: string
+          date?: string
+          duration?: number
+          id?: string
+          intensity?: number
+          notes?: string | null
+          perceived_difficulty?: number | null
+          sections?: Json
+          type?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workouts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
